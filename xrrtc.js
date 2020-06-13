@@ -1,7 +1,9 @@
-const defaultIceServers = [
+import RoomClient from './client/RoomClient.js';
+
+/* const defaultIceServers = [
   {'urls': 'stun:stun.stunprotocol.org:3478'},
   {'urls': 'stun:stun.l.google.com:19302'},
-];
+]; */
 
 const roomAlphabetStartIndex = 'A'.charCodeAt(0);
 const roomAlphabetEndIndex = 'Z'.charCodeAt(0)+1;
@@ -18,14 +20,134 @@ class XRChannelConnection extends EventTarget {
   constructor(url, options = {}) {
     super();
 
-    this.rtcWs = new WebSocket(url);
+    // this.rtcWs = new WebSocket(url);
     this.connectionId = makeId();
     this.peerConnections = [];
     this.microphoneMediaStream = options.microphoneMediaStream;
     this.videoMediaStream = options.videoMediaStream;
-    this.open = true;
+    this.dataChannel = null;
 
-    this.rtcWs.onopen = () => {
+    // console.log('local connection id', this.connectionId);
+
+    const _getPeerConnection = peerConnectionId => this.peerConnections.find(peerConnection => peerConnection.connectionId === peerConnectionId);
+    const _addPeerConnection = (peerConnectionId, dataChannel) => {
+      let peerConnection = _getPeerConnection(peerConnectionId);
+      if (!peerConnection) {
+        peerConnection = new XRPeerConnection(peerConnectionId, dataChannel, this);
+        // console.log('add peer connection', peerConnection);
+        this.peerConnections.push(peerConnection);
+        this.dispatchEvent(new MessageEvent('peerconnection', {
+          data: peerConnection,
+        }));
+      }
+      return peerConnection;
+    };
+    const _removePeerConnection = peerConnectionId => {
+      const index = this.peerConnections.findIndex(peerConnection => peerConnection.connectionId === peerConnectionId);
+      if (index !== -1) {
+        this.peerConnections.splice(index, 1)[0].close();
+      } else {
+        console.warn('no such peer connection', peerConnectionId, this.peerConnections.map(peerConnection => peerConnection.connectionId));
+      }
+    };
+
+    const {roomName = 'room', displayName = 'user'} = options;
+    const dialogClient = new RoomClient({
+      url: `${url}?roomId=${roomName}&peerId=${this.connectionId}`,
+      displayName,
+    });
+    dialogClient.addEventListener('addsend', async e => {
+      const {data: {dataProducer: {id, _dataChannel}}} = e;
+      // console.log('add send', _dataChannel);
+      if (_dataChannel.readyState !== 'open') {
+        await new Promise((accept, reject) => {
+          const _open = e => {
+            accept();
+
+            _dataChannel.removeEventListener('open', _open);
+          };
+          _dataChannel.addEventListener('open', _open);
+        });
+      }
+      /* _dataChannel.addEventListener('message', e => {
+        console.log('got send data', e);
+      }); */
+      this.dataChannel = _dataChannel;
+
+      this.dispatchEvent(new MessageEvent('open', {
+        data: {},
+      }));
+    });
+    dialogClient.addEventListener('removesend', e => {
+      const {data: {dataProducer: {id, _dataChannel}}} = e;
+      // console.log('remove send', _dataChannel);
+      this.dataChannel = null;
+    });
+    dialogClient.addEventListener('addreceive', e => {
+      const {data: {peerId, label, dataConsumer: {id, _dataChannel}}} = e;
+      // console.log('add data receive', peerId, label, _dataChannel);
+      if (peerId) {
+        const peerConnection = _addPeerConnection(peerId, _dataChannel);
+        _dataChannel.addEventListener('message', e => {
+          // console.log('receive message', e);
+          const j = JSON.parse(e.data);
+          // const {dst} = j;
+          // if (dst === null || dst === this.connectionId) {
+            peerConnection.dispatchEvent(new MessageEvent('message', {
+              data: j,
+            }));
+          /* } else {
+            console.log('got message for wrong dst', j, this.connectionId);
+            // debugger;
+          } */
+        });
+        _dataChannel.addEventListener('close', e => {
+          _removePeerConnection(peerId);
+        });
+        // peerConnection.setDataChannel(_dataChannel);
+      }
+    });
+    dialogClient.addEventListener('removereceive', e => {
+      const {data: {peerId, label, dataConsumer: {id, _dataChannel}}} = e;
+      // console.log('remove data receive', peerId, label, _dataChannel);
+
+      /* if (peerId) {
+        _removePeerConnection(peerId);
+      } */
+    });
+    dialogClient.addEventListener('addreceivestream', e => {
+      const {data: {peerId, consumer: {id, _track}}} = e;
+      // console.log('add receive stream', peerId, _track);
+      if (peerId) {
+        const peerConnection = _getPeerConnection(peerId);
+        if (peerConnection) {
+          peerConnection.addTrack(_track);
+        } else {
+          console.warn('no peer connection with id', peerId);
+        }
+      }
+    });
+    dialogClient.addEventListener('removereceivestream', e => {
+      const {data: {peerId, consumer: {id, _track}}} = e;
+      // console.log('remove receive stream', peerId, _track);
+      if (peerId) {
+        const peerConnection = _getPeerConnection(peerId);
+        if (peerConnection) {
+          peerConnection.removeTrack(_track);
+        } else {
+          console.warn('no peer connection with id', peerId);
+        }
+      }
+    });
+
+    (async () => {
+      await dialogClient.join();
+      await dialogClient.enableChatDataProducer();
+      // await dialogClient.enableMic();
+      // await dialogClient.enableWebcam();
+    })();
+
+    /* this.rtcWs.onopen = () => {
       // console.log('presence socket open');
 
       this.rtcWs.send(JSON.stringify({
@@ -37,10 +159,6 @@ class XRChannelConnection extends EventTarget {
     };
     const _addPeerConnection = peerConnectionId => {
       let peerConnection = this.peerConnections.find(peerConnection => peerConnection.connectionId === peerConnectionId);
-      /* if (peerConnection && !peerConnection.open) {
-        peerConnection.close();
-        peerConnection = null;
-      } */
       if (!peerConnection) {
         peerConnection = new XRPeerConnection(peerConnectionId);
         peerConnection.token = this.connectionId < peerConnectionId ? -1 : 0;
@@ -85,7 +203,7 @@ class XRChannelConnection extends EventTarget {
 
         this.peerConnections.push(peerConnection);
         this.dispatchEvent(new MessageEvent('peerconnection', {
-          data: peerConnection,
+          detail: peerConnection,
         }));
 
         if (this.microphoneMediaStream) {
@@ -235,7 +353,7 @@ class XRChannelConnection extends EventTarget {
         _removePeerConnection(peerConnectionId);
       } else {
         this.dispatchEvent(new MessageEvent('message', {
-          data: JSON.parse(e.data),
+          data: e.data,
         }));
       }
     };
@@ -243,10 +361,7 @@ class XRChannelConnection extends EventTarget {
       clearInterval(pingInterval);
       console.log('rtc ws got close');
 
-      if (this.open) {
-        this.open = false;
-        this.dispatchEvent(new MessageEvent('close'));
-      }
+      this.dispatchEvent(new MessageEvent('close'));
     };
     this.rtcWs.onerror = err => {
       console.warn('rtc error', err);
@@ -260,15 +375,10 @@ class XRChannelConnection extends EventTarget {
       this.rtcWs.send(JSON.stringify({
         method: 'ping',
       }));
-    }, 30*1000);
+    }, 30*1000); */
   }
 
-  close() {
-    if (this.open) {
-      this.open = false;
-      this.dispatchEvent(new MessageEvent('close'));
-    }
-
+  disconnect() {
     this.rtcWs.close();
     this.rtcWs = null;
 
@@ -279,16 +389,7 @@ class XRChannelConnection extends EventTarget {
   }
 
   send(s) {
-    this.rtcWs.send(s);
-  }
-
-  update(hmd, gamepads) {
-    for (let i = 0; i < this.peerConnections.length; i++) {
-      const peerConnection = this.peerConnections[i];
-      if (peerConnection.open) {
-        peerConnection.update(hmd, gamepads);
-      }
-    }
+    this.dataChannel.send(s);
   }
 
   setMicrophoneMediaStream(microphoneMediaStream) {
@@ -347,28 +448,19 @@ class XRChannelConnection extends EventTarget {
 }
 
 class XRPeerConnection extends EventTarget {
-  constructor(peerConnectionId) {
+  constructor(peerConnectionId, dataChannel, channelConnection) {
     super();
 
     this.connectionId = peerConnectionId;
-
-    this.peerConnection = new RTCPeerConnection({
-      iceServers: defaultIceServers,
-    });
+    this.dataChannel = dataChannel;
+    this.channelConnection = channelConnection;
     this.open = true;
-    this.sendChannelOpen = false;
-    this.queue = [];
 
-    /* this.peerConnection.onaddstream = e => {
-      this.dispatchEvent(new MessageEvent('mediastream', {
-        data: e.stream,
-      }));
-    }; */
-    this.peerConnection.ontrack = e => {
+    /* this.peerConnection.ontrack = e => {
       const mediaStream = new MediaStream();
       mediaStream.addTrack(e.track);
       this.dispatchEvent(new MessageEvent('mediastream', {
-        data: mediaStream,
+        detail: mediaStream,
       }));
     };
 
@@ -376,35 +468,19 @@ class XRPeerConnection extends EventTarget {
     this.peerConnection.sendChannel = sendChannel;
     let pingInterval = 0;
     sendChannel.onopen = () => {
-      this.sendChannelOpen = true;
-      const queue = this.queue.slice();
-      this.queue.length = 0;
-      for (let i = 0; i < queue.length; i++) {
-        const [method, data] = queue[i];
-        this.send(method, data);
-      }
+      // console.log('data channel local open');
+
+      this.open = true;
+      this.dispatchEvent(new MessageEvent('open'));
     };
     sendChannel.onclose = () => {
       console.log('send channel got close');
-
-      this.sendChannelOpen = false;
 
       _cleanup();
     };
     sendChannel.onerror = err => {
       // console.log('data channel local error', err);
     };
-    /* let watchdogTimeout = 0;
-    const _kick = () => {
-      if (watchdogTimeout) {
-        clearTimeout(watchdogTimeout);
-        watchdogTimeout = 0;
-      }
-      watchdogTimeout = setTimeout(() => {
-        this.peerConnection.close();
-      }, 5000);
-    };
-    _kick(); */
     this.peerConnection.ondatachannel = e => {
       const {channel} = e;
       // console.log('data channel remote open', channel);
@@ -418,11 +494,17 @@ class XRPeerConnection extends EventTarget {
       channel.onmessage = e => {
         // console.log('data channel message', e.data);
 
-        const j = JSON.parse(e.data);
-        const [method, data] = j;
-        this.dispatchEvent(new MessageEvent(method, {
-          data,
-        }));
+        const data = JSON.parse(e.data);
+        const {method} = data;
+        if (method === 'pose') {
+          this.dispatchEvent(new MessageEvent('pose', {
+            detail: data,
+          }))
+        } else {
+          this.dispatchEvent(new MessageEvent('message', {
+            data: e.data,
+          }));
+        }
 
         // _kick();
       };
@@ -446,33 +528,31 @@ class XRPeerConnection extends EventTarget {
         clearInterval(pingInterval);
         pingInterval = 0;
       }
-    };
+    }; */
   }
-
   close() {
-    this.peerConnection.close();
+    /* this.peerConnection.close();
     this.peerConnection.sendChannel && this.peerConnection.sendChannel.close();
-    this.peerConnection.recvChannel && this.peerConnection.recvChannel.close();
-  }
-
-  send(method, data) {
-    if (this.sendChannelOpen) {
-      this.peerConnection.sendChannel.send(JSON.stringify([method, data]));
-    } else {
-      this.queue.push([method, data]);
-    }
-  }
-
-  /* update(hmd, gamepads) {
-    this.send(JSON.stringify({
-      method: 'pose',
-      hmd,
-      gamepads,
+    this.peerConnection.recvChannel && this.peerConnection.recvChannel.close(); */
+    this.open = false;
+    this.dispatchEvent(new MessageEvent('close', {
+      data: {},
     }));
-  } */
+  }
+
+  setDataChannel(dataChannel) {
+    this.dataChannel = dataChannel;
+  }
+  addTrack(track) {
+    console.log('add track', track);
+  }
+  removeTrack(track) {
+    console.log('remove track', track);
+  }
 }
 
 export {
+  makeId,
   XRChannelConnection,
   XRPeerConnection,
 };
