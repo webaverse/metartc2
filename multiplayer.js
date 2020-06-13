@@ -27,32 +27,14 @@ class XRChannelConnection extends EventTarget {
     this.videoMediaStream = options.videoMediaStream;
     this.dataChannel = null;
 
-    console.log('local connection id', this.connectionId);
+    // console.log('local connection id', this.connectionId);
 
     const _getPeerConnection = peerConnectionId => this.peerConnections.find(peerConnection => peerConnection.connectionId === peerConnectionId);
     const _addPeerConnection = (peerConnectionId, dataChannel) => {
       let peerConnection = _getPeerConnection(peerConnectionId);
       if (!peerConnection) {
         peerConnection = new XRPeerConnection(peerConnectionId, dataChannel, this);
-        /* peerConnection.token = this.connectionId < peerConnectionId ? -1 : 0;
-        peerConnection.needsNegotiation = false;
-        peerConnection.negotiating = false;
-        peerConnection.peerConnection.onnegotiationneeded = e => {
-          console.log('negotiation needed', peerConnection.token, peerConnection.negotiating);
-          if (peerConnection.token !== 0 && !peerConnection.negotiating) {
-            if (peerConnection.token !== -1) {
-              clearTimeout(peerConnection.token);
-              peerConnection.token = -1;
-            }
-            peerConnection.needsNegotiation = false;
-            peerConnection.negotiating = true;
-
-            _startOffer(peerConnection);
-          } else {
-            peerConnection.needsNegotiation = true;
-          }
-        }; */
-        console.log('add peer connection', peerConnection);
+        // console.log('add peer connection', peerConnection);
         this.peerConnections.push(peerConnection);
         this.dispatchEvent(new MessageEvent('peerconnection', {
           data: peerConnection,
@@ -76,21 +58,20 @@ class XRChannelConnection extends EventTarget {
     });
     dialogClient.addEventListener('addsend', async e => {
       const {data: {dataProducer: {id, _dataChannel}}} = e;
-      console.log('add send', _dataChannel);
+      // console.log('add send', _dataChannel);
       if (_dataChannel.readyState !== 'open') {
         await new Promise((accept, reject) => {
           const _open = e => {
             accept();
 
-            // _dataChannel.flushMessageQueue();
             _dataChannel.removeEventListener('open', _open);
           };
           _dataChannel.addEventListener('open', _open);
         });
       }
-      _dataChannel.addEventListener('message', e => {
+      /* _dataChannel.addEventListener('message', e => {
         console.log('got send data', e);
-      });
+      }); */
       this.dataChannel = _dataChannel;
 
       this.dispatchEvent(new MessageEvent('open', {
@@ -99,15 +80,12 @@ class XRChannelConnection extends EventTarget {
     });
     dialogClient.addEventListener('removesend', e => {
       const {data: {dataProducer: {id, _dataChannel}}} = e;
-      console.log('remove send', _dataChannel);
+      // console.log('remove send', _dataChannel);
       this.dataChannel = null;
     });
     dialogClient.addEventListener('addreceive', e => {
       const {data: {peerId, label, dataConsumer: {id, _dataChannel}}} = e;
-      console.log('add data receive', peerId, label, _dataChannel);
-      /* _dataChannel.addEventListener('message', e => {
-        console.log('got data message', peerId, e);
-      }); */
+      // console.log('add data receive', peerId, label, _dataChannel);
       if (peerId) {
         const peerConnection = _addPeerConnection(peerId, _dataChannel);
         _dataChannel.addEventListener('message', e => {
@@ -131,7 +109,7 @@ class XRChannelConnection extends EventTarget {
     });
     dialogClient.addEventListener('removereceive', e => {
       const {data: {peerId, label, dataConsumer: {id, _dataChannel}}} = e;
-      console.log('remove data receive', peerId, label, _dataChannel);
+      // console.log('remove data receive', peerId, label, _dataChannel);
 
       /* if (peerId) {
         _removePeerConnection(peerId);
@@ -139,7 +117,7 @@ class XRChannelConnection extends EventTarget {
     });
     dialogClient.addEventListener('addreceivestream', e => {
       const {data: {peerId, consumer: {id, _track}}} = e;
-      console.log('add receive stream', peerId, _track);
+      // console.log('add receive stream', peerId, _track);
       if (peerId) {
         const peerConnection = _getPeerConnection(peerId);
         if (peerConnection) {
@@ -151,7 +129,7 @@ class XRChannelConnection extends EventTarget {
     });
     dialogClient.addEventListener('removereceivestream', e => {
       const {data: {peerId, consumer: {id, _track}}} = e;
-      console.log('remove receive stream', peerId, _track);
+      // console.log('remove receive stream', peerId, _track);
       if (peerId) {
         const peerConnection = _getPeerConnection(peerId);
         if (peerConnection) {
