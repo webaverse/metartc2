@@ -408,6 +408,7 @@ export default class RoomClient extends EventTarget
 									data: {
 										peerId,
 									    consumer,
+									    appData,
 									},
 								}));
 							});
@@ -444,6 +445,7 @@ export default class RoomClient extends EventTarget
 								data: {
 									peerId,
 								    consumer,
+								    appData,
 								},
 							}));
 						}
@@ -498,7 +500,7 @@ export default class RoomClient extends EventTarget
 									sctpStreamParameters,
 									label,
 									protocol,
-									appData : { ...appData, peerId } // Trick.
+									// appData : { ...appData, peerId } // Trick.
 								});
 
 							// Store in the map.
@@ -518,6 +520,7 @@ export default class RoomClient extends EventTarget
 										peerId,
 										label,
 									    dataConsumer,
+									    appData,
 									},
 								}));
 							});
@@ -533,6 +536,7 @@ export default class RoomClient extends EventTarget
 										peerId,
 										label,
 									    dataConsumer,
+									    appData,
 									},
 								}));
 
@@ -1738,7 +1742,7 @@ export default class RoomClient extends EventTarget
 		}
 	}
 
-	async enableChatDataProducer()
+	async enableChatDataProducer(appData = {})
 	{
 		logger.debug('enableChatDataProducer()');
 
@@ -1784,7 +1788,8 @@ export default class RoomClient extends EventTarget
 					// maxRetransmits : 1,
 					label          : 'chat',
 					priority       : 'medium',
-					appData        : { info: 'my-chat-DataProducer' }
+					appData,
+					// appData        : { info: 'my-chat-DataProducer' }
 				});
 
 			/* store.dispatch(stateActions.addDataProducer(
