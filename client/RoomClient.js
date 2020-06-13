@@ -302,14 +302,13 @@ export default class RoomClient extends EventTarget
 				stateActions.setRoomState('connecting')); */
 
 			this._protoo.on('open', () => {
-				console.log('got protoo open');
 				this._joinRoom()
 				  .then(accept, reject);
 			});
 
 			this._protoo.on('failed', () =>
 			{
-				console.log({
+				console.warn({
 					type : 'error',
 					text : 'WebSocket connection failed'
 				});
@@ -2247,8 +2246,6 @@ export default class RoomClient extends EventTarget
 
 		try
 		{
-            console.log('joinRoom 1');
-
 			this._mediasoupDevice = new mediasoupClient.Device(
 				{
 					handlerName : this._handlerName
@@ -2256,8 +2253,6 @@ export default class RoomClient extends EventTarget
 
 			const routerRtpCapabilities =
 				await this._protoo.request('getRouterRtpCapabilities');
-
-		    console.log('joinRoom 2');
 
 			await this._mediasoupDevice.load({ routerRtpCapabilities });
 
