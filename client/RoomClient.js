@@ -2256,7 +2256,7 @@ export default class RoomClient extends EventTarget
 
 			await this._mediasoupDevice.load({ routerRtpCapabilities });
 
-			// NOTE: Stuff to play remote audios due to browsers' new autoplay policy.
+			/* // NOTE: Stuff to play remote audios due to browsers' new autoplay policy.
 			//
 			// Just get access to the mic and DO NOT close the mic track for a while.
 			// Super hack!
@@ -2267,7 +2267,7 @@ export default class RoomClient extends EventTarget
 				audioTrack.enabled = false;
 
 				setTimeout(() => audioTrack.stop(), 120000);
-			}
+			} */
 
 			// Create mediasoup Transport for sending (unless we don't want to produce).
 			if (this._produce)
