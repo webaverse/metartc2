@@ -23,7 +23,9 @@
   </form>
 <script type=module>
 import THREE from '../three.module.js';
-import {XRChannelConnection} from '../xrrtc.js';
+import {XRChannelConnection} from '../multiplayer.js';
+
+const presenceHost = 'wss://rtc.exokit.org:4443';
 
 const renderer = new THREE.WebGLRenderer({
   antialias: true,
@@ -193,37 +195,35 @@ window.addEventListener('mousemove', e => {
 });
 
 let channelConnection = null;
+let channelConnectionOpen = false;
 const peerConnections = [];
 let microphoneMediaStream = null;
-const _connectMultiplayer = async roomId => {
-  channelConnection = new XRChannelConnection(`wss://presence.exokit.org/?c=${encodeURIComponent(roomId)}`, {
-    // videoMediaStream,
+const _connectMultiplayer = async roomName => {
+  channelConnection = new XRChannelConnection(`${presenceHost}/`, {
+    roomName,
+    // displayName: 'user',
   });
+  channelConnection.addEventListener('open', e => {
+    channelConnectionOpen = true;
+  }, {once: true});
+  channelConnection.addEventListener('close', e => {
+    channelConnectionOpen = false;
+  }, {once: true});
   channelConnection.addEventListener('peerconnection', e => {
     const peerConnection = e.data;
 
     const playerRig = _makeRig();
+    _addRig(playerRig);
+    peerConnections.push(peerConnection);
 
-    peerConnection.addEventListener('open', () => {
-      peerConnections.push(peerConnection);
-      _addRig(playerRig);
-    });
     peerConnection.addEventListener('close', () => {
       peerConnections.splice(peerConnections.indexOf(peerConnection), 1);
       _removeRig(playerRig);
     });
-    peerConnection.addEventListener('pose', e => {
-      const [head, leftHand, rightHand] = e.data;
+    peerConnection.addEventListener('message', e => {
+      const {pose: [head, leftHand, rightHand]} = e.data;
       _updateRig(playerRig, head, leftHand, rightHand);
     });
-    /* peerConnection.addEventListener('screenshare', e => {
-      const mediaStream = e.data;
-      console.log('got screen share media stream', mediaStream);
-
-      const video = document.createElement('video');
-      video.srcObject = mediaStream;
-      video.play();
-    }); */
   });
 };
 const _disconnectMultiplayer = async () => {
@@ -231,8 +231,8 @@ const _disconnectMultiplayer = async () => {
     channelConnection.disconnect()
     channelConnection = null;
 
-    const href = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
-    history.replaceState(null, '', href);
+    // const href = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
+    // history.replaceState(null, '', href);
   }
 };
 window.addEventListener('beforeunload', _disconnectMultiplayer);
@@ -283,7 +283,7 @@ function animate() {
   myRig.rightHand.quaternion.copy(camera.quaternion);
 
   // send pose to other players
-  if (peerConnections.length > 0) {
+  if (channelConnectionOpen) {
     const pose = [
       {
         position: myRig.head.position.toArray(),
@@ -298,9 +298,9 @@ function animate() {
         quaternion: myRig.rightHand.quaternion.toArray(),
       },
     ];
-    for (let i = 0; i < peerConnections.length; i++) {
-      peerConnections[i].send('pose', pose);
-    }
+    channelConnection.send(JSON.stringify({
+      pose,
+    }));
   }
 
   renderer.render(scene, camera);

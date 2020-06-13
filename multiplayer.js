@@ -54,8 +54,8 @@ class XRChannelConnection extends EventTarget {
         }; */
         console.log('add peer connection', peerConnection);
         this.peerConnections.push(peerConnection);
-        this.dispatchEvent(new CustomEvent('peerconnection', {
-          detail: peerConnection,
+        this.dispatchEvent(new MessageEvent('peerconnection', {
+          data: peerConnection,
         }));
       }
       return peerConnection;
@@ -69,7 +69,7 @@ class XRChannelConnection extends EventTarget {
       }
     };
 
-    const {roomName, displayName} = options;
+    const {roomName = 'room', displayName = 'user'} = options;
     const dialogClient = new RoomClient({
       url: `${url}?roomId=${roomName}&peerId=${this.connectionId}`,
       displayName,
@@ -113,15 +113,15 @@ class XRChannelConnection extends EventTarget {
         _dataChannel.addEventListener('message', e => {
           // console.log('receive message', e);
           const j = JSON.parse(e.data);
-          const {dst} = j;
-          if (dst === null || dst === this.connectionId) {
+          // const {dst} = j;
+          // if (dst === null || dst === this.connectionId) {
             peerConnection.dispatchEvent(new MessageEvent('message', {
               data: j,
             }));
-          } else {
+          /* } else {
             console.log('got message for wrong dst', j, this.connectionId);
             // debugger;
-          }
+          } */
         });
         _dataChannel.addEventListener('close', e => {
           _removePeerConnection(peerId);
@@ -180,7 +180,7 @@ class XRChannelConnection extends EventTarget {
         connectionId: this.connectionId,
       }));
 
-      this.dispatchEvent(new CustomEvent('open'));
+      this.dispatchEvent(new MessageEvent('open'));
     };
     const _addPeerConnection = peerConnectionId => {
       let peerConnection = this.peerConnections.find(peerConnection => peerConnection.connectionId === peerConnectionId);
@@ -227,7 +227,7 @@ class XRChannelConnection extends EventTarget {
         };
 
         this.peerConnections.push(peerConnection);
-        this.dispatchEvent(new CustomEvent('peerconnection', {
+        this.dispatchEvent(new MessageEvent('peerconnection', {
           detail: peerConnection,
         }));
 
@@ -386,7 +386,7 @@ class XRChannelConnection extends EventTarget {
       clearInterval(pingInterval);
       console.log('rtc ws got close');
 
-      this.dispatchEvent(new CustomEvent('close'));
+      this.dispatchEvent(new MessageEvent('close'));
     };
     this.rtcWs.onerror = err => {
       console.warn('rtc error', err);
@@ -484,7 +484,7 @@ class XRPeerConnection extends EventTarget {
     /* this.peerConnection.ontrack = e => {
       const mediaStream = new MediaStream();
       mediaStream.addTrack(e.track);
-      this.dispatchEvent(new CustomEvent('mediastream', {
+      this.dispatchEvent(new MessageEvent('mediastream', {
         detail: mediaStream,
       }));
     };
@@ -496,7 +496,7 @@ class XRPeerConnection extends EventTarget {
       // console.log('data channel local open');
 
       this.open = true;
-      this.dispatchEvent(new CustomEvent('open'));
+      this.dispatchEvent(new MessageEvent('open'));
     };
     sendChannel.onclose = () => {
       console.log('send channel got close');
@@ -522,7 +522,7 @@ class XRPeerConnection extends EventTarget {
         const data = JSON.parse(e.data);
         const {method} = data;
         if (method === 'pose') {
-          this.dispatchEvent(new CustomEvent('pose', {
+          this.dispatchEvent(new MessageEvent('pose', {
             detail: data,
           }))
         } else {
@@ -543,7 +543,7 @@ class XRPeerConnection extends EventTarget {
     const _cleanup = () => {
       if (this.open) {
         this.open = false;
-        this.dispatchEvent(new CustomEvent('close'));
+        this.dispatchEvent(new MessageEvent('close'));
       }
       if (this.token !== -1) {
         clearTimeout(this.token);
