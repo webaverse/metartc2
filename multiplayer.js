@@ -163,13 +163,10 @@ class XRChannelConnection extends EventTarget {
     });
 
     (async () => {
-      console.log('join 1');
       await dialogClient.join();
-      console.log('join 2');
       await dialogClient.enableChatDataProducer();
       // await dialogClient.enableMic();
       // await dialogClient.enableWebcam();
-      console.log('join 3');
     })();
 
     /* this.rtcWs.onopen = () => {
