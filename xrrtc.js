@@ -376,12 +376,13 @@ class XRChannelConnection extends EventTarget {
         method: 'ping',
       }));
     }, 30*1000); */
-    close() {
-      this.dialogClient.close();
-    }
   }
 
-  disconnect() {
+  close() {
+    this.dialogClient.close();
+  }
+
+  /* disconnect() {
     this.rtcWs.close();
     this.rtcWs = null;
 
@@ -389,7 +390,7 @@ class XRChannelConnection extends EventTarget {
       this.peerConnections[i].close();
     }
     this.peerConnections.length = 0;
-  }
+  } */
 
   send(s) {
     this.dataChannel.send(s);
