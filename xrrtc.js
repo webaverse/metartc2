@@ -139,13 +139,13 @@ class XRChannelConnection extends EventTarget {
         }
       }
     });
-
     (async () => {
       await dialogClient.join();
       await dialogClient.enableChatDataProducer();
       // await dialogClient.enableMic();
       // await dialogClient.enableWebcam();
     })();
+    this.dialogClient = dialogClient;
 
     /* this.rtcWs.onopen = () => {
       // console.log('presence socket open');
@@ -376,6 +376,9 @@ class XRChannelConnection extends EventTarget {
         method: 'ping',
       }));
     }, 30*1000); */
+    close() {
+      this.dialogClient.close();
+    }
   }
 
   disconnect() {
