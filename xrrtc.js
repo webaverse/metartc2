@@ -89,17 +89,10 @@ class XRChannelConnection extends EventTarget {
       if (peerId) {
         const peerConnection = _addPeerConnection(peerId, _dataChannel);
         _dataChannel.addEventListener('message', e => {
-          // console.log('receive message', e);
-          const j = JSON.parse(e.data);
-          // const {dst} = j;
-          // if (dst === null || dst === this.connectionId) {
-            peerConnection.dispatchEvent(new MessageEvent('message', {
-              data: j,
-            }));
-          /* } else {
-            console.log('got message for wrong dst', j, this.connectionId);
-            // debugger;
-          } */
+          const {data} = e;
+          peerConnection.dispatchEvent(new MessageEvent('message', {
+            data,
+          }));
         });
         _dataChannel.addEventListener('close', e => {
           _removePeerConnection(peerId);
