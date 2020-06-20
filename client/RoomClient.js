@@ -915,11 +915,11 @@ export default class RoomClient extends EventTarget
 
 			this._micProducer.on('trackended', () =>
 			{
-				store.dispatch(requestActions.notify(
+				/* store.dispatch(requestActions.notify(
 					{
 						type : 'error',
 						text : 'Microphone disconnected!'
-					}));
+					})); */
 
 				this.disableMic()
 					.catch(() => {});
@@ -929,11 +929,11 @@ export default class RoomClient extends EventTarget
 		{
 			logger.error('enableMic() | failed:%o', error);
 
-			store.dispatch(requestActions.notify(
+			/* store.dispatch(requestActions.notify(
 				{
 					type : 'error',
 					text : `Error enabling microphone: ${error}`
-				}));
+				})); */
 
 			if (track)
 				track.stop();
@@ -949,8 +949,8 @@ export default class RoomClient extends EventTarget
 
 		this._micProducer.close();
 
-		store.dispatch(
-			stateActions.removeProducer(this._micProducer.id));
+		/* store.dispatch(
+			stateActions.removeProducer(this._micProducer.id)); */
 
 		try
 		{
@@ -959,11 +959,11 @@ export default class RoomClient extends EventTarget
 		}
 		catch (error)
 		{
-			store.dispatch(requestActions.notify(
+			/* store.dispatch(requestActions.notify(
 				{
 					type : 'error',
 					text : `Error closing server-side mic Producer: ${error}`
-				}));
+				})); */
 		}
 
 		this._micProducer = null;
