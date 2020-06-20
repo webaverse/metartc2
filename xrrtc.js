@@ -111,7 +111,9 @@ class XRChannelConnection extends EventTarget {
       if (peerId) {
         const peerConnection = _getPeerConnection(peerId);
         if (peerConnection) {
-          peerConnection.addTrack(_track);
+          peerConnection.dispatchEvent(new MessageEvent('addtrack', {
+            data: _track,
+          }));
         } else {
           console.warn('no peer connection with id', peerId);
         }
@@ -123,7 +125,9 @@ class XRChannelConnection extends EventTarget {
       if (peerId) {
         const peerConnection = _getPeerConnection(peerId);
         if (peerConnection) {
-          peerConnection.removeTrack(_track);
+          peerConnection.dispatchEvent(new MessageEvent('removetrack', {
+            data: _track,
+          }));
         } else {
           console.warn('no peer connection with id', peerId);
         }
@@ -260,12 +264,6 @@ class XRPeerConnection extends EventTarget {
 
   setDataChannel(dataChannel) {
     this.dataChannel = dataChannel;
-  }
-  addTrack(track) {
-    console.log('add track', track);
-  }
-  removeTrack(track) {
-    console.log('remove track', track);
   }
 }
 
