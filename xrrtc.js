@@ -20,11 +20,8 @@ class XRChannelConnection extends EventTarget {
   constructor(url, options = {}) {
     super();
 
-    // this.rtcWs = new WebSocket(url);
     this.connectionId = makeId();
     this.peerConnections = [];
-    // this.microphoneMediaStream = options.microphoneMediaStream;
-    // this.videoMediaStream = options.videoMediaStream;
     this.dataChannel = null;
 
     // console.log('local connection id', this.connectionId);
@@ -158,60 +155,13 @@ class XRChannelConnection extends EventTarget {
   send(s) {
     this.dataChannel.send(s);
   }
-
-  /* setMicrophoneMediaStream(microphoneMediaStream) {
-    const {microphoneMediaStream: oldMicrophoneMediaStream} = this;
-    if (oldMicrophoneMediaStream) {
-      const oldTracks = oldMicrophoneMediaStream.getAudioTracks();
-      for (let i = 0; i < this.peerConnections.length; i++) {
-        const peerConnection = this.peerConnections[i];
-        const senders = peerConnection.peerConnection.getSenders();
-        const oldTrackSenders = oldTracks.map(track => senders.find(sender => sender.track === track));
-        for (let j = 0; j < oldTrackSenders.length; j++) {
-          peerConnection.peerConnection.removeTrack(oldTrackSenders[j]);
-        }
-      }
-    }
-
-    this.microphoneMediaStream = microphoneMediaStream;
-
-    if (microphoneMediaStream) {
-      const tracks = microphoneMediaStream.getAudioTracks();
-      for (let i = 0; i < this.peerConnections.length; i++) {
-        const peerConnection = this.peerConnections[i];
-        for (let j = 0; j < tracks.length; j++) {
-          peerConnection.peerConnection.addTrack(tracks[j]);
-        }
-      }
-    }
-  }
   
-  setVideoMediaStream(videoMediaStream) {
-    const {videoMediaStream: oldVideoMediaStream} = this;
-    if (oldVideoMediaStream) {
-      const oldTracks = oldVideoMediaStream.getVideoTracks();
-      for (let i = 0; i < this.peerConnections.length; i++) {
-        const peerConnection = this.peerConnections[i];
-        const senders = peerConnection.peerConnection.getSenders();
-        const oldTrackSenders = oldTracks.map(track => senders.find(sender => sender.track === track));
-        for (let j = 0; j < oldTrackSenders.length; j++) {
-          peerConnection.peerConnection.removeTrack(oldTrackSenders[j]);
-        }
-      }
-    }
-
-    this.videoMediaStream = videoMediaStream;
-
-    if (videoMediaStream) {
-      const tracks = videoMediaStream.getVideoTracks();
-      for (let i = 0; i < this.peerConnections.length; i++) {
-        const peerConnection = this.peerConnections[i];
-        for (let j = 0; j < tracks.length; j++) {
-          peerConnection.peerConnection.addTrack(tracks[j]);
-        }
-      }
-    }
-  } */
+  async enableMic() {
+    await this.dialogClient.enableMic();
+  }
+  async disableMic() {
+    await this.dialogClient.disableMic();
+  }
 }
 
 class XRPeerConnection extends EventTarget {
