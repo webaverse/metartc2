@@ -159,7 +159,7 @@ class XRChannelConnection extends EventTarget {
     this.dataChannel.send(s);
   }
 
-  setMicrophoneMediaStream(microphoneMediaStream) {
+  /* setMicrophoneMediaStream(microphoneMediaStream) {
     const {microphoneMediaStream: oldMicrophoneMediaStream} = this;
     if (oldMicrophoneMediaStream) {
       const oldTracks = oldMicrophoneMediaStream.getAudioTracks();
@@ -211,7 +211,7 @@ class XRChannelConnection extends EventTarget {
         }
       }
     }
-  }
+  } */
 }
 
 class XRPeerConnection extends EventTarget {
