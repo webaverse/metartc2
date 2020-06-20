@@ -158,6 +158,7 @@ class XRChannelConnection extends EventTarget {
   
   async enableMic() {
     await this.dialogClient.enableMic();
+    return this.dialogClient._micProducer._track;
   }
   async disableMic() {
     await this.dialogClient.disableMic();
