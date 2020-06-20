@@ -23,8 +23,8 @@ class XRChannelConnection extends EventTarget {
     // this.rtcWs = new WebSocket(url);
     this.connectionId = makeId();
     this.peerConnections = [];
-    this.microphoneMediaStream = options.microphoneMediaStream;
-    this.videoMediaStream = options.videoMediaStream;
+    // this.microphoneMediaStream = options.microphoneMediaStream;
+    // this.videoMediaStream = options.videoMediaStream;
     this.dataChannel = null;
 
     // console.log('local connection id', this.connectionId);
