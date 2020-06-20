@@ -867,7 +867,7 @@ export default class RoomClient extends EventTarget
 			return;
 		}
 
-		let track;
+		let stream, track;
 
 		try
 		{
@@ -875,13 +875,13 @@ export default class RoomClient extends EventTarget
 			{
 				logger.debug('enableMic() | calling getUserMedia()');
 
-				const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+				stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
 				track = stream.getAudioTracks()[0];
 			}
 			else
 			{
-				const stream = await this._getExternalVideoStream();
+				stream = await this._getExternalVideoStream();
 
 				track = stream.getAudioTracks()[0].clone();
 			}
@@ -898,6 +898,7 @@ export default class RoomClient extends EventTarget
 					// codec : this._mediasoupDevice.rtpCapabilities.codecs
 					// 	.find((codec) => codec.mimeType.toLowerCase() === 'audio/pcma')
 				});
+      this._micProducer._stream = stream;
 
 			/* store.dispatch(stateActions.addProducer(
 				{
