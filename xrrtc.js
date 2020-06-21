@@ -31,7 +31,6 @@ class XRChannelConnection extends EventTarget {
       let peerConnection = _getPeerConnection(peerConnectionId);
       if (!peerConnection) {
         peerConnection = new XRPeerConnection(peerConnectionId, dataChannel, this);
-        // console.log('add peer connection', peerConnection);
         this.peerConnections.push(peerConnection);
         this.dispatchEvent(new MessageEvent('peerconnection', {
           data: peerConnection,
@@ -66,9 +65,6 @@ class XRChannelConnection extends EventTarget {
           _dataChannel.addEventListener('open', _open);
         });
       }
-      /* _dataChannel.addEventListener('message', e => {
-        console.log('got send data', e);
-      }); */
       this.dataChannel = _dataChannel;
 
       this.dispatchEvent(new MessageEvent('open', {
@@ -94,16 +90,11 @@ class XRChannelConnection extends EventTarget {
         _dataChannel.addEventListener('close', e => {
           _removePeerConnection(peerId);
         });
-        // peerConnection.setDataChannel(_dataChannel);
       }
     });
     dialogClient.addEventListener('removereceive', e => {
       const {data: {peerId, label, dataConsumer: {id, _dataChannel}}} = e;
-      // console.log('remove data receive', peerId, label, _dataChannel);
 
-      /* if (peerId) {
-        _removePeerConnection(peerId);
-      } */
     });
     dialogClient.addEventListener('addreceivestream', e => {
       const {data: {peerId, consumer: {id, _track}}} = e;
