@@ -191,97 +191,15 @@ class XRPeerConnection extends EventTarget {
     super();
 
     this.connectionId = peerConnectionId;
-    // this.dataChannel = dataChannel;
     this.channelConnection = channelConnection;
     this.open = true;
-
-    /* this.peerConnection.ontrack = e => {
-      const mediaStream = new MediaStream();
-      mediaStream.addTrack(e.track);
-      this.dispatchEvent(new MessageEvent('mediastream', {
-        detail: mediaStream,
-      }));
-    };
-
-    const sendChannel = this.peerConnection.createDataChannel('sendChannel');
-    this.peerConnection.sendChannel = sendChannel;
-    let pingInterval = 0;
-    sendChannel.onopen = () => {
-      // console.log('data channel local open');
-
-      this.open = true;
-      this.dispatchEvent(new MessageEvent('open'));
-    };
-    sendChannel.onclose = () => {
-      console.log('send channel got close');
-
-      _cleanup();
-    };
-    sendChannel.onerror = err => {
-      // console.log('data channel local error', err);
-    };
-    this.peerConnection.ondatachannel = e => {
-      const {channel} = e;
-      // console.log('data channel remote open', channel);
-      channel.onclose = () => {
-        // console.log('data channel remote close');
-        this.peerConnection.close();
-      };
-      channel.onerror = err => {
-        // console.log('data channel remote error', err);
-      };
-      channel.onmessage = e => {
-        // console.log('data channel message', e.data);
-
-        const data = JSON.parse(e.data);
-        const {method} = data;
-        if (method === 'pose') {
-          this.dispatchEvent(new MessageEvent('pose', {
-            detail: data,
-          }))
-        } else {
-          this.dispatchEvent(new MessageEvent('message', {
-            data: e.data,
-          }));
-        }
-
-        // _kick();
-      };
-      this.peerConnection.recvChannel = channel;
-    };
-    this.peerConnection.close = (close => function() {
-      _cleanup();
-
-      return close.apply(this, arguments);
-    })(this.peerConnection.close);
-    const _cleanup = () => {
-      if (this.open) {
-        this.open = false;
-        this.dispatchEvent(new MessageEvent('close'));
-      }
-      if (this.token !== -1) {
-        clearTimeout(this.token);
-        this.token = -1;
-      }
-      if (pingInterval) {
-        clearInterval(pingInterval);
-        pingInterval = 0;
-      }
-    }; */
   }
   close() {
-    /* this.peerConnection.close();
-    this.peerConnection.sendChannel && this.peerConnection.sendChannel.close();
-    this.peerConnection.recvChannel && this.peerConnection.recvChannel.close(); */
     this.open = false;
     this.dispatchEvent(new MessageEvent('close', {
       data: {},
     }));
   }
-
-  /* setDataChannel(dataChannel) {
-    this.dataChannel = dataChannel;
-  } */
 }
 
 export {
