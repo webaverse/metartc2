@@ -26,26 +26,33 @@ class XRChannelConnection extends EventTarget {
 
     // console.log('local connection id', this.connectionId);
 
-    const _getPeerConnection = peerConnectionId => this.peerConnections.find(peerConnection => peerConnection.connectionId === peerConnectionId);
-    const _addPeerConnection = (peerConnectionId, dataChannel) => {
+    const _getPeerConnectionIndex = peerConnectionId => this.peerConnections.findIndex(peerConnection => peerConnection.connectionId === peerConnectionId);
+    const _getPeerConnection = peerConnectionId => {
+      const index = _getPeerConnectionIndex(peerConnectionId);
+      const peerConnection = this.peerConnections[index];
+      return peerConnection;
+    };
+    const _addPeerConnection = peerConnectionId => {
       let peerConnection = _getPeerConnection(peerConnectionId);
       if (!peerConnection) {
-        peerConnection = new XRPeerConnection(peerConnectionId, dataChannel, this);
+        peerConnection = new XRPeerConnection(peerConnectionId, this);
+        peerConnection.numStreams = 0;
         this.peerConnections.push(peerConnection);
         this.dispatchEvent(new MessageEvent('peerconnection', {
           data: peerConnection,
         }));
       }
+      peerConnection.numStreams++;
       return peerConnection;
     };
-    const _removePeerConnection = peerConnectionId => {
+    /* const _removePeerConnection = peerConnectionId => {
       const index = this.peerConnections.findIndex(peerConnection => peerConnection.connectionId === peerConnectionId);
       if (index !== -1) {
         this.peerConnections.splice(index, 1)[0].close();
       } else {
         console.warn('no such peer connection', peerConnectionId, this.peerConnections.map(peerConnection => peerConnection.connectionId));
       }
-    };
+    }; */
 
     const {roomName = 'room', displayName = 'user'} = options;
     const dialogClient = new RoomClient({
@@ -80,27 +87,40 @@ class XRChannelConnection extends EventTarget {
       const {data: {peerId, label, dataConsumer: {id, _dataChannel}}} = e;
       // console.log('add data receive', peerId, label, _dataChannel);
       if (peerId) {
-        const peerConnection = _addPeerConnection(peerId, _dataChannel);
+        const peerConnection = _addPeerConnection(peerId);
         _dataChannel.addEventListener('message', e => {
           const {data} = e;
           peerConnection.dispatchEvent(new MessageEvent('message', {
             data,
           }));
         });
-        _dataChannel.addEventListener('close', e => {
-          _removePeerConnection(peerId);
-        });
       }
     });
     dialogClient.addEventListener('removereceive', e => {
-      const {data: {peerId, label, dataConsumer: {id, _dataChannel}}} = e;
-
+      const {data: {peerId, dataConsumer: {id, _dataChannel}}} = e;
+      // console.log('remove receive stream', peerId, _track);
+      if (peerId) {
+        const index = _getPeerConnectionIndex(peerId);
+        if (index !== -1) {
+          const peerConnection = this.peerConnections[index];
+          peerConnection.dispatchEvent(new MessageEvent('removetrack', {
+            data: _track,
+          }));
+          
+          if (--peerConnection.numStreams) {
+            peerConnection.close();
+            this.peerConnections.splice(index, 1);
+          }
+        } else {
+          console.warn('no peer connection with id', peerId);
+        }
+      }
     });
     dialogClient.addEventListener('addreceivestream', e => {
       const {data: {peerId, consumer: {id, _track}}} = e;
       // console.log('add receive stream', peerId, _track);
       if (peerId) {
-        const peerConnection = _getPeerConnection(peerId);
+        const peerConnection = _addPeerConnection(peerId);
         if (peerConnection) {
           peerConnection.dispatchEvent(new MessageEvent('addtrack', {
             data: _track,
@@ -114,11 +134,17 @@ class XRChannelConnection extends EventTarget {
       const {data: {peerId, consumer: {id, _track}}} = e;
       // console.log('remove receive stream', peerId, _track);
       if (peerId) {
-        const peerConnection = _getPeerConnection(peerId);
-        if (peerConnection) {
+        const index = _getPeerConnectionIndex(peerId);
+        if (index !== -1) {
+          const peerConnection = this.peerConnections[index];
           peerConnection.dispatchEvent(new MessageEvent('removetrack', {
             data: _track,
           }));
+          
+          if (--peerConnection.numStreams) {
+            peerConnection.close();
+            this.peerConnections.splice(index, 1);
+          }
         } else {
           console.warn('no peer connection with id', peerId);
         }
@@ -161,11 +187,11 @@ class XRChannelConnection extends EventTarget {
 }
 
 class XRPeerConnection extends EventTarget {
-  constructor(peerConnectionId, dataChannel, channelConnection) {
+  constructor(peerConnectionId, channelConnection) {
     super();
 
     this.connectionId = peerConnectionId;
-    this.dataChannel = dataChannel;
+    // this.dataChannel = dataChannel;
     this.channelConnection = channelConnection;
     this.open = true;
 
@@ -253,9 +279,9 @@ class XRPeerConnection extends EventTarget {
     }));
   }
 
-  setDataChannel(dataChannel) {
+  /* setDataChannel(dataChannel) {
     this.dataChannel = dataChannel;
-  }
+  } */
 }
 
 export {
