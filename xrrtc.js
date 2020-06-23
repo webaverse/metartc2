@@ -99,7 +99,7 @@ class XRChannelConnection extends EventTarget {
 
           if (--peerConnection.numStreams <= 0) {
             peerConnection.close();
-            this.peerConnections.splice(index, 1);
+            this.peerConnections.splice(this.peerConnections.indexOf(peerConnection), 1);
           }
         });
       }
@@ -137,7 +137,7 @@ class XRChannelConnection extends EventTarget {
 
           if (--peerConnection.numStreams <= 0) {
             peerConnection.close();
-            this.peerConnections.splice(index, 1);
+            this.peerConnections.splice(this.peerConnections.indexOf(peerConnection), 1);
           }
         });
       }
