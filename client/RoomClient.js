@@ -853,7 +853,7 @@ export default class RoomClient extends EventTarget
 	    });
 	}
 
-	async enableMic(newStream)
+	async enableMic(mediaStream)
 	{
 		logger.debug('enableMic()');
 
@@ -871,8 +871,7 @@ export default class RoomClient extends EventTarget
 
 		try
 		{
-			stream = newStream;
-			track = stream.getAudioTracks()[0];
+			track = mediaStream.getAudioTracks()[0];
 
 			/* if (!this._externalVideo)
 			{
