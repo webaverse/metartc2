@@ -94,6 +94,9 @@ class XRChannelConnection extends EventTarget {
             data,
           }));
         });
+        _dataChannel.addEventListener('close', e => {
+          console.warn('data channel close', e);
+        });
       }
     });
     dialogClient.addEventListener('removereceive', e => {
@@ -121,13 +124,12 @@ class XRChannelConnection extends EventTarget {
       // console.log('add receive stream', peerId, _track);
       if (peerId) {
         const peerConnection = _addPeerConnection(peerId);
-        if (peerConnection) {
-          peerConnection.dispatchEvent(new MessageEvent('addtrack', {
-            data: _track,
-          }));
-        } else {
-          console.warn('no peer connection with id', peerId);
-        }
+        peerConnection.dispatchEvent(new MessageEvent('addtrack', {
+          data: _track,
+        }));
+        _track.addEventListener('ended', e => {
+          console.warn('receive stream ended', e);
+        });
       }
     });
     dialogClient.addEventListener('removereceivestream', e => {
