@@ -853,25 +853,28 @@ export default class RoomClient extends EventTarget
 	    });
 	}
 
-	async enableMic()
+	async enableMic(newStream)
 	{
 		logger.debug('enableMic()');
 
 		if (this._micProducer)
 			return;
 
-		if (!this._mediasoupDevice.canProduce('audio'))
+		/* if (!this._mediasoupDevice.canProduce('audio'))
 		{
 			logger.error('enableMic() | cannot produce audio');
 
 			return;
-		}
+		} */
 
 		let track;
 
 		try
 		{
-			if (!this._externalVideo)
+			stream = newStream;
+			track = stream.getAudioTracks()[0];
+
+			/* if (!this._externalVideo)
 			{
 				logger.debug('enableMic() | calling getUserMedia()');
 
@@ -884,7 +887,7 @@ export default class RoomClient extends EventTarget
 				const stream = await this._getExternalVideoStream();
 
 				track = stream.getAudioTracks()[0].clone();
-			}
+			} */
 
 			this._micProducer = await this._sendTransport.produce(
 				{
