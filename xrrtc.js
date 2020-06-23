@@ -107,7 +107,7 @@ class XRChannelConnection extends EventTarget {
             data: _track,
           }));
           
-          if (--peerConnection.numStreams) {
+          if (--peerConnection.numStreams <= 0) {
             peerConnection.close();
             this.peerConnections.splice(index, 1);
           }
@@ -141,7 +141,7 @@ class XRChannelConnection extends EventTarget {
             data: _track,
           }));
           
-          if (--peerConnection.numStreams) {
+          if (--peerConnection.numStreams <= 0) {
             peerConnection.close();
             this.peerConnections.splice(index, 1);
           }
