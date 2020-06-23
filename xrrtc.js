@@ -96,10 +96,15 @@ class XRChannelConnection extends EventTarget {
         });
         _dataChannel.addEventListener('close', e => {
           console.warn('data channel close', e);
+
+          if (--peerConnection.numStreams <= 0) {
+            peerConnection.close();
+            this.peerConnections.splice(index, 1);
+          }
         });
       }
     });
-    dialogClient.addEventListener('removereceive', e => {
+    /* dialogClient.addEventListener('removereceive', e => {
       const {data: {peerId, dataConsumer: {id, _dataChannel}}} = e;
       // console.log('remove receive stream', peerId, _track);
       if (peerId) {
@@ -118,7 +123,7 @@ class XRChannelConnection extends EventTarget {
           console.warn('no peer connection with id', peerId);
         }
       }
-    });
+    }); */
     dialogClient.addEventListener('addreceivestream', e => {
       const {data: {peerId, consumer: {id, _track}}} = e;
       // console.log('add receive stream', peerId, _track);
@@ -129,10 +134,15 @@ class XRChannelConnection extends EventTarget {
         }));
         _track.addEventListener('ended', e => {
           console.warn('receive stream ended', e);
+
+          if (--peerConnection.numStreams <= 0) {
+            peerConnection.close();
+            this.peerConnections.splice(index, 1);
+          }
         });
       }
     });
-    dialogClient.addEventListener('removereceivestream', e => {
+    /* dialogClient.addEventListener('removereceivestream', e => {
       const {data: {peerId, consumer: {id, _track}}} = e;
       // console.log('remove receive stream', peerId, _track);
       if (peerId) {
@@ -151,7 +161,7 @@ class XRChannelConnection extends EventTarget {
           console.warn('no peer connection with id', peerId);
         }
       }
-    });
+    }); */
     (async () => {
       await dialogClient.join();
       await dialogClient.enableChatDataProducer();
