@@ -843,6 +843,17 @@ export default class RoomClient extends EventTarget
 						break;
 					}
 
+					case 'message':
+					{
+						const {data} = notification;
+
+						this.dispatchEvent(new MessageEvent('message', {
+							data,
+						}));
+
+						break;
+					}
+
 					default:
 					{
 						logger.error(

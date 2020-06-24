@@ -102,26 +102,6 @@ class XRChannelConnection extends EventTarget {
         }
       });
     });
-    /* dialogClient.addEventListener('removereceive', e => {
-      const {data: {peerId, dataConsumer: {id, _dataChannel}}} = e;
-      // console.log('remove receive stream', peerId, _track);
-      if (peerId) {
-        const index = _getPeerConnectionIndex(peerId);
-        if (index !== -1) {
-          const peerConnection = this.peerConnections[index];
-          peerConnection.dispatchEvent(new MessageEvent('removetrack', {
-            data: _track,
-          }));
-          
-          if (--peerConnection.numStreams <= 0) {
-            peerConnection.close();
-            this.peerConnections.splice(index, 1);
-          }
-        } else {
-          console.warn('no peer connection with id', peerId);
-        }
-      }
-    }); */
     dialogClient.addEventListener('addreceivestream', e => {
       const {data: {peerId, consumer: {id, _track}}} = e;
       // console.log('add receive stream', peerId, _track);
@@ -138,26 +118,12 @@ class XRChannelConnection extends EventTarget {
         }
       });
     });
-    /* dialogClient.addEventListener('removereceivestream', e => {
-      const {data: {peerId, consumer: {id, _track}}} = e;
-      // console.log('remove receive stream', peerId, _track);
-      if (peerId) {
-        const index = _getPeerConnectionIndex(peerId);
-        if (index !== -1) {
-          const peerConnection = this.peerConnections[index];
-          peerConnection.dispatchEvent(new MessageEvent('removetrack', {
-            data: _track,
-          }));
-          
-          if (--peerConnection.numStreams <= 0) {
-            peerConnection.close();
-            this.peerConnections.splice(index, 1);
-          }
-        } else {
-          console.warn('no peer connection with id', peerId);
-        }
-      }
-    }); */
+    dialogClient.addEventListener('message', e => {
+      const {data} = e;
+      this.dispatchEvent(new MessageEvent('message', {
+        data,
+      }))
+    });
     (async () => {
       await dialogClient.join();
       await dialogClient.enableChatDataProducer();
