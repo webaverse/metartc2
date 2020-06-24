@@ -1609,6 +1609,16 @@ export default class RoomClient extends EventTarget
 			stateActions.setAudioMutedState(false));
 	}
 
+    setState(key, value) {
+	    if (this._closed)
+	        return;
+
+        this._protoo.notify('setState', {
+        	key,
+        	value,
+        });
+    }
+
 	async restartIce()
 	{
 		logger.debug('restartIce()');

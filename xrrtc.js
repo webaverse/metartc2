@@ -118,11 +118,15 @@ class XRChannelConnection extends EventTarget {
         }
       });
     });
-    dialogClient.addEventListener('message', e => {
-      const {data} = e;
-      this.dispatchEvent(new MessageEvent('message', {
-        data,
-      }))
+    [
+      'initState',
+      'updateState',
+    ].forEach(m => {
+      dialogClient.addEventListener(m, e => {
+        this.dispatchEvent(new MessageEvent(m, {
+          data: e.data,
+        }))
+      });
     });
     (async () => {
       await dialogClient.join();
@@ -131,6 +135,10 @@ class XRChannelConnection extends EventTarget {
       // await dialogClient.enableWebcam();
     })();
     this.dialogClient = dialogClient;
+  }
+
+  setState(key, value) {
+    this.dialogClient.setState(key, value);
   }
 
   close() {
