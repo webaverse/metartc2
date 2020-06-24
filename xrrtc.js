@@ -38,7 +38,7 @@ class XRChannelConnection extends EventTarget {
         peerConnection = new XRPeerConnection(peerConnectionId, this);
         peerConnection.numStreams = 0;
         this.peerConnections.push(peerConnection);
-        this.dispatchEvent(new MessageEvent('peerconnection', {
+        this.dispatchEvent(new MessageEvent(peerConnectionId ? 'peerconnection' : 'botconnection', {
           data: peerConnection,
         }));
       }
@@ -86,23 +86,21 @@ class XRChannelConnection extends EventTarget {
     dialogClient.addEventListener('addreceive', e => {
       const {data: {peerId, label, dataConsumer: {id, _dataChannel}}} = e;
       // console.log('add data receive', peerId, label, _dataChannel);
-      if (peerId) {
-        const peerConnection = _addPeerConnection(peerId);
-        _dataChannel.addEventListener('message', e => {
-          const {data} = e;
-          peerConnection.dispatchEvent(new MessageEvent('message', {
-            data,
-          }));
-        });
-        _dataChannel.addEventListener('close', e => {
-          console.warn('data channel close', e);
+      const peerConnection = _addPeerConnection(peerId);
+      _dataChannel.addEventListener('message', e => {
+        const {data} = e;
+        peerConnection.dispatchEvent(new MessageEvent('message', {
+          data,
+        }));
+      });
+      _dataChannel.addEventListener('close', e => {
+        console.warn('data channel close', e);
 
-          if (--peerConnection.numStreams <= 0) {
-            peerConnection.close();
-            this.peerConnections.splice(this.peerConnections.indexOf(peerConnection), 1);
-          }
-        });
-      }
+        if (--peerConnection.numStreams <= 0) {
+          peerConnection.close();
+          this.peerConnections.splice(this.peerConnections.indexOf(peerConnection), 1);
+        }
+      });
     });
     /* dialogClient.addEventListener('removereceive', e => {
       const {data: {peerId, dataConsumer: {id, _dataChannel}}} = e;
@@ -127,20 +125,18 @@ class XRChannelConnection extends EventTarget {
     dialogClient.addEventListener('addreceivestream', e => {
       const {data: {peerId, consumer: {id, _track}}} = e;
       // console.log('add receive stream', peerId, _track);
-      if (peerId) {
-        const peerConnection = _addPeerConnection(peerId);
-        peerConnection.dispatchEvent(new MessageEvent('addtrack', {
-          data: _track,
-        }));
-        _track.addEventListener('ended', e => {
-          console.warn('receive stream ended', e);
+      const peerConnection = _addPeerConnection(peerId);
+      peerConnection.dispatchEvent(new MessageEvent('addtrack', {
+        data: _track,
+      }));
+      _track.addEventListener('ended', e => {
+        console.warn('receive stream ended', e);
 
-          if (--peerConnection.numStreams <= 0) {
-            peerConnection.close();
-            this.peerConnections.splice(this.peerConnections.indexOf(peerConnection), 1);
-          }
-        });
-      }
+        if (--peerConnection.numStreams <= 0) {
+          peerConnection.close();
+          this.peerConnections.splice(this.peerConnections.indexOf(peerConnection), 1);
+        }
+      });
     });
     /* dialogClient.addEventListener('removereceivestream', e => {
       const {data: {peerId, consumer: {id, _track}}} = e;
