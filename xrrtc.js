@@ -141,6 +141,10 @@ class XRChannelConnection extends EventTarget {
     this.dialogClient.setState(key, value);
   }
 
+  deleteState(key) {
+    this.dialogClient.deleteState(key);
+  }
+
   close() {
     this.dialogClient.close();
   }

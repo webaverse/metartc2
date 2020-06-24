@@ -1619,6 +1619,15 @@ export default class RoomClient extends EventTarget
         });
     }
 
+    deleteState(key, value) {
+	    if (this._closed)
+	        return;
+
+        this._protoo.notify('deleteState', {
+        	key,
+        });
+    }
+
 	async restartIce()
 	{
 		logger.debug('restartIce()');
