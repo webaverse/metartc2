@@ -83,6 +83,7 @@ class XRChannelConnection extends EventTarget {
       // console.log('remove send', _dataChannel);
       this.dataChannel = null;
     });
+
     dialogClient.addEventListener('addreceive', e => {
       const {data: {peerId, label, dataConsumer: {id, _dataChannel}}} = e;
       // console.log('add data receive', peerId, label, _dataChannel);
@@ -139,6 +140,10 @@ class XRChannelConnection extends EventTarget {
 
   setState(key, value) {
     this.dialogClient.setState(key, value);
+  }
+
+  getState(key) {
+    this.dialogClient.getState(key);
   }
 
   deleteState(key) {

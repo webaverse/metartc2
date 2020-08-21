@@ -770,6 +770,7 @@ var
                     })
                 }
                 async notify(e, t) {
+                    console.log(e, t)
                     const o = s.createNotification(e, t);
                     this._logger.debug("notify() [method:%s]", e), await this._transport.send(o)
                 }

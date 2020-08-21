@@ -10,22 +10,36 @@
     top: 0;
     left: 0;
     background-color: #EEE;
+    padding-left: 20px;
   }
+
+  #fileUploadContainer {
+    padding-bottom: 30px;
+    visibility: hidden;
+  }
+
 </style>
 </head>
 <body>
   <form>
-    <h1>Connect to room</h1>
-    <input type="text" placeholder="Room name" id=room-name-input>
-    <input type=button value="Connect" id=connect-button>
-    <input type=button value="Disonnect" id=disconnect-button style="display: none;">
-    <p>Click for FPS controls</p>
+    <div>
+      <h1>Connect to room</h1>
+      <input type="text" placeholder="Room name" id=room-name-input>
+      <input type=button value="Connect" id=connect-button>
+      <input type=button value="Disonnect" id=disconnect-button style="display: none;">
+      <p>Click for FPS controls</p>
+    </div>
+    <br/>
+    <div id='fileUploadContainer'>
+      <h3>Upload asset to world</h3>
+      <input type="file" id="fileInput" name="fileInput">
+    </div>  
   </form>
 <script type=module>
 import THREE from '../three.module.js';
-import {XRChannelConnection} from '../xrrtc.js';
+import { XRChannelConnection } from '../xrrtc.js';
 
-const presenceHost = 'wss://rtc.exokit.org:4443';
+const presenceHost = 'wss://127.0.0.1:4443';
 
 const renderer = new THREE.WebGLRenderer({
   antialias: true,
@@ -198,17 +212,34 @@ let channelConnection = null;
 let channelConnectionOpen = false;
 const peerConnections = [];
 let microphoneMediaStream = null;
+const uploadForm = document.getElementById('fileUploadContainer')
+let uploadData = null;
+
 const _connectMultiplayer = async roomName => {
   channelConnection = new XRChannelConnection(`${presenceHost}/`, {
     roomName,
     // displayName: 'user',
   });
+
+  const fileInput = document.getElementById('fileInput');
+  fileInput.addEventListener('change', async (e) => {
+    const buffer = await e.target.files[0].arrayBuffer();
+    console.log(buffer)
+    channelConnection.setState('hello', buffer.toString())
+    setTimeout(() => {
+      console.log(channelConnection.getState('hello'))
+    }, 5000);
+  })
+  uploadForm.style.visibility = 'visible'
+  
   channelConnection.addEventListener('open', e => {
     channelConnectionOpen = true;
   }, {once: true});
+
   channelConnection.addEventListener('close', e => {
     channelConnectionOpen = false;
   }, {once: true});
+
   channelConnection.addEventListener('peerconnection', e => {
     const peerConnection = e.data;
 
@@ -230,7 +261,8 @@ const _connectMultiplayer = async roomName => {
 };
 const _disconnectMultiplayer = async () => {
   if (channelConnection) {
-    channelConnection.disconnect()
+    uploadForm.style.visibility = 'hidden'
+    channelConnection.close()
     channelConnection = null;
 
     // const href = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;

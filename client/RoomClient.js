@@ -1617,6 +1617,16 @@ export default class RoomClient extends EventTarget
         	key,
         	value,
         });
+	}
+	
+	getState(key, value) {
+	    if (this._closed)
+	        return;
+
+        this._protoo.notify('getState', {
+			key,
+			value
+        }); 
     }
 
     deleteState(key, value) {
