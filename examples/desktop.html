@@ -18,6 +18,12 @@
     visibility: hidden;
   }
 
+  #previewImage {
+    height: 350px;
+    width: 350px;
+    margin-right: 20px;
+  }
+
 </style>
 </head>
 <body>
@@ -32,7 +38,13 @@
     <br/>
     <div id='fileUploadContainer'>
       <h3>Upload asset to world</h3>
-      <input type="file" id="fileInput" name="fileInput">
+      <div>
+        <input type="file" id="fileInput" name="fileInput">
+      </div>
+      <br/>
+      <div>
+        <img alt="Asset Upload" id="previewImage">
+      </div>
     </div>  
   </form>
 <script type=module>
@@ -215,6 +227,19 @@ let microphoneMediaStream = null;
 const uploadForm = document.getElementById('fileUploadContainer')
 let uploadData = null;
 
+const setPreviewImage = (file) => {
+  const previewImage = document.getElementById('previewImage');
+  const reader = new FileReader();
+
+  reader.addEventListener("load", () => {
+    previewImage.src = reader.result;
+  }, false);
+
+  if (file) {
+    reader.readAsDataURL(file);
+  }
+}
+
 const _connectMultiplayer = async roomName => {
   channelConnection = new XRChannelConnection(`${presenceHost}/`, {
     roomName,
@@ -223,6 +248,7 @@ const _connectMultiplayer = async roomName => {
 
   const fileInput = document.getElementById('fileInput');
   fileInput.addEventListener('change', async (e) => {
+    setPreviewImage(e.target.files[0])
     const buffer = await e.target.files[0].arrayBuffer();
     console.log(buffer)
     channelConnection.setState('hello', buffer.toString())
