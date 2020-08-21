@@ -18,8 +18,13 @@
     visibility: hidden;
   }
 
+  #stateListContainer {
+    padding-bottom: 30px;
+    visibility: hidden;
+  }
+
   #previewImage {
-    height: 350px;
+    height: 250px;
     width: 350px;
     margin-right: 20px;
   }
@@ -29,22 +34,28 @@
 <body>
   <form>
     <div>
-      <h1>Connect to room</h1>
+      <h1>Connect to a room:</h1>
       <input type="text" placeholder="Room name" id=room-name-input>
       <input type=button value="Connect" id=connect-button>
       <input type=button value="Disonnect" id=disconnect-button style="display: none;">
-      <p>Click for FPS controls</p>
+      <p>Click for FPS controls!</p>
     </div>
     <br/>
     <div id='fileUploadContainer'>
-      <h3>Upload asset to world</h3>
+      <h3>Upload state to world:</h3>
       <div>
         <input type="file" id="fileInput" name="fileInput">
       </div>
       <br/>
       <div>
-        <img alt="Asset Upload" id="previewImage">
+        <img alt="preview image" id="previewImage">
       </div>
+    </div>  
+    <div id='stateListContainer'>
+      <h3>List of things in world state:</h3>
+      <ul id="stateList">
+        <li>none</li>
+      </ul>
     </div>  
   </form>
 <script type=module>
@@ -224,8 +235,9 @@ let channelConnection = null;
 let channelConnectionOpen = false;
 const peerConnections = [];
 let microphoneMediaStream = null;
-const uploadForm = document.getElementById('fileUploadContainer')
 let uploadData = null;
+const uploadContainer = document.getElementById('fileUploadContainer');
+const stateListContainer = document.getElementById('stateListContainer');
 
 const setPreviewImage = (file) => {
   const previewImage = document.getElementById('previewImage');
@@ -246,18 +258,38 @@ const _connectMultiplayer = async roomName => {
     // displayName: 'user',
   });
 
+  setTimeout(() => {
+    console.log(channelConnection.getAllState())
+  }, 5000);
+
   const fileInput = document.getElementById('fileInput');
+  const stateList = document.getElementById('stateList');
+
+  uploadContainer.style.visibility = 'visible';
+  stateListContainer.style.visibility = 'visible';
+
   fileInput.addEventListener('change', async (e) => {
     setPreviewImage(e.target.files[0])
     const buffer = await e.target.files[0].arrayBuffer();
     console.log(buffer)
-    channelConnection.setState('hello', buffer.toString())
+    channelConnection.setState('hello', 'there')
     setTimeout(() => {
-      console.log(channelConnection.getState('hello'))
+      channelConnection.getState('hello')
     }, 5000);
   })
-  uploadForm.style.visibility = 'visible'
-  
+
+  channelConnection.addEventListener('getState', e => {
+    console.log(e)
+  });
+
+  channelConnection.addEventListener('setState', e => {
+    console.log(e)
+  });
+
+  channelConnection.addEventListener('setAllState', e => {
+    console.log(e)
+  });
+
   channelConnection.addEventListener('open', e => {
     channelConnectionOpen = true;
   }, {once: true});
@@ -287,8 +319,9 @@ const _connectMultiplayer = async roomName => {
 };
 const _disconnectMultiplayer = async () => {
   if (channelConnection) {
-    uploadForm.style.visibility = 'hidden'
-    channelConnection.close()
+    uploadContainer.style.visibility = 'hidden';
+    stateListContainer.style.visibility = 'hidden';
+    channelConnection.close();
     channelConnection = null;
 
     // const href = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;

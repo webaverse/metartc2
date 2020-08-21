@@ -853,6 +853,36 @@ export default class RoomClient extends EventTarget
 						break;
 					}
 
+					case 'getAllState':
+						console.log(notification)
+					{
+						this.dispatchEvent(new MessageEvent(notification.method, {
+							data: notification.data,
+						}));
+
+						break;
+					}
+
+					case 'getState':
+						console.log(notification)
+					{
+						this.dispatchEvent(new MessageEvent(notification.method, {
+							data: notification.data,
+						}));
+
+						break;
+					}
+
+					case 'setState':
+						console.log(notification)
+					{
+						this.dispatchEvent(new MessageEvent(notification.method, {
+							data: notification.data,
+						}));
+
+						break;
+					}
+
 					default:
 					{
 						logger.error(
@@ -1619,14 +1649,20 @@ export default class RoomClient extends EventTarget
         });
 	}
 	
-	getState(key, value) {
+	getState(key) {
 	    if (this._closed)
 	        return;
 
         this._protoo.notify('getState', {
-			key,
-			value
+			key
         }); 
+	}
+	
+	getAllState() {
+	    if (this._closed)
+	        return;
+
+        this._protoo.notify('getAllState'); 
     }
 
     deleteState(key, value) {

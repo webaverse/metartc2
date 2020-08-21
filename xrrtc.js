@@ -146,6 +146,10 @@ class XRChannelConnection extends EventTarget {
     this.dialogClient.getState(key);
   }
 
+  getAllState() {
+    this.dialogClient.getAllState();
+  }
+
   deleteState(key) {
     this.dialogClient.deleteState(key);
   }
