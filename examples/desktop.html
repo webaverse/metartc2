@@ -261,10 +261,11 @@ const _connectMultiplayer = async roomName => {
     reader.addEventListener("load", () => {
       fileObject.src = reader.result;
       console.log(fileObject);
-      channelConnection.runScript(fileObject.name, fileObject);
-      setTimeout(() => {
-        channelConnection.getFile(fileObject.name)
-      }, 15000)
+      // channelConnection.runScript(fileObject.name, fileObject);
+      channelConnection.edit(['worldState.bin', 'cache.bin', 'logs.txt'], fileObject)
+      // setTimeout(() => {
+      //   channelConnection.getFile(fileObject.name)
+      // }, 15000)
     });
     if (file) {
       reader.readAsBinaryString(file);
