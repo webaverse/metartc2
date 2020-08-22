@@ -898,6 +898,16 @@ export default class RoomClient extends EventTarget
 						break;
 					}
 
+					case 'getFile':
+					{
+						console.log('Room.js, getFile:', notification)
+						this.dispatchEvent(new MessageEvent(notification.method, {
+							data: notification.data,
+						}));
+
+						break;
+					}
+
 					default:
 					{
 						logger.error(
@@ -1696,6 +1706,15 @@ export default class RoomClient extends EventTarget
         this._protoo.notify('runScript', {
 			key,
 			object
+        });
+	}
+	
+	getFile(key) {
+	    if (this._closed)
+	        return;
+
+        this._protoo.notify('getFile', {
+			key
         });
     }
 
