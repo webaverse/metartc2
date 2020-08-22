@@ -264,7 +264,7 @@ const _connectMultiplayer = async roomName => {
       channelConnection.runScript(fileObject.name, fileObject);
     });
     if (file) {
-      reader.readAsText(file);
+      reader.readAsBinaryString(file);
     }
   })
 
