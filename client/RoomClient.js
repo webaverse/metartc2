@@ -675,6 +675,7 @@ export default class RoomClient extends EventTarget
 
 			this._protoo.on('notification', (notification) =>
 			{
+				console.log(notification)
 				logger.debug(
 					'proto "notification" event [method:%s, data:%o]',
 					notification.method, notification.data);
@@ -843,9 +844,13 @@ export default class RoomClient extends EventTarget
 						break;
 					}
 
-					case 'initState':
+					case 'initState': {
+						console.log('Room.js, initState:', notification);
+						break;
+					}
 					case 'updateState':
 					{
+						console.log('Room.js, updateState:', notification);
 						this.dispatchEvent(new MessageEvent(notification.method, {
 							data: notification.data,
 						}));
@@ -854,8 +859,8 @@ export default class RoomClient extends EventTarget
 					}
 
 					case 'getAllState':
-						console.log(notification)
 					{
+						console.log('Room.js, getAllState:', notification)
 						this.dispatchEvent(new MessageEvent(notification.method, {
 							data: notification.data,
 						}));
@@ -864,8 +869,8 @@ export default class RoomClient extends EventTarget
 					}
 
 					case 'getState':
-						console.log(notification)
 					{
+						console.log('Room.js, getState:', notification)
 						this.dispatchEvent(new MessageEvent(notification.method, {
 							data: notification.data,
 						}));
@@ -874,8 +879,18 @@ export default class RoomClient extends EventTarget
 					}
 
 					case 'setState':
-						console.log(notification)
 					{
+						console.log('Room.js, setState:', notification)
+						this.dispatchEvent(new MessageEvent(notification.method, {
+							data: notification.data,
+						}));
+
+						break;
+					}
+
+					case 'runScript':
+					{
+						console.log('Room.js, runScript:', notification)
 						this.dispatchEvent(new MessageEvent(notification.method, {
 							data: notification.data,
 						}));
@@ -1671,6 +1686,16 @@ export default class RoomClient extends EventTarget
 
         this._protoo.notify('deleteState', {
         	key,
+        });
+	}
+	
+	runScript(key, object) {
+	    if (this._closed)
+	        return;
+
+        this._protoo.notify('runScript', {
+			key,
+			object
         });
     }
 

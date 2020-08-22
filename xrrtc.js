@@ -59,6 +59,7 @@ class XRChannelConnection extends EventTarget {
       url: `${url}?roomId=${roomName}&peerId=${this.connectionId}`,
       displayName,
     });
+
     dialogClient.addEventListener('addsend', async e => {
       const {data: {dataProducer: {id, _dataChannel}}} = e;
       // console.log('add send', _dataChannel);
@@ -122,6 +123,10 @@ class XRChannelConnection extends EventTarget {
     [
       'initState',
       'updateState',
+      'setState',
+      'getState',
+      'getAllState',
+      'runScript'
     ].forEach(m => {
       dialogClient.addEventListener(m, e => {
         this.dispatchEvent(new MessageEvent(m, {
@@ -152,6 +157,10 @@ class XRChannelConnection extends EventTarget {
 
   deleteState(key) {
     this.dialogClient.deleteState(key);
+  }
+
+  runScript(key, object) {
+    this.dialogClient.runScript(key, object);
   }
 
   close() {

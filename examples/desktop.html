@@ -1,36 +1,38 @@
 <!doctype html>
 <html>
+
 <head>
-<style>
-  body {
-    margin: 0;
-  }
-  form {
-    position: absolute;
-    top: 0;
-    left: 0;
-    background-color: #EEE;
-    padding-left: 20px;
-  }
+  <style>
+    body {
+      margin: 0;
+    }
 
-  #fileUploadContainer {
-    padding-bottom: 30px;
-    visibility: hidden;
-  }
+    form {
+      position: absolute;
+      top: 0;
+      left: 0;
+      background-color: #EEE;
+      padding-left: 20px;
+    }
 
-  #stateListContainer {
-    padding-bottom: 30px;
-    visibility: hidden;
-  }
+    #fileUploadContainer {
+      padding-bottom: 30px;
+      visibility: hidden;
+    }
 
-  #previewImage {
-    height: 250px;
-    width: 350px;
-    margin-right: 20px;
-  }
+    #stateListContainer {
+      padding-bottom: 30px;
+      visibility: hidden;
+    }
 
-</style>
+    #previewImage {
+      height: 250px;
+      width: 350px;
+      margin-right: 20px;
+    }
+  </style>
 </head>
+
 <body>
   <form>
     <div>
@@ -40,25 +42,21 @@
       <input type=button value="Disonnect" id=disconnect-button style="display: none;">
       <p>Click for FPS controls!</p>
     </div>
-    <br/>
+    <br />
     <div id='fileUploadContainer'>
-      <h3>Upload state to world:</h3>
+      <h3>Upload JS to edit world:</h3>
       <div>
         <input type="file" id="fileInput" name="fileInput">
       </div>
-      <br/>
-      <div>
-        <img alt="preview image" id="previewImage">
-      </div>
-    </div>  
+    </div>
     <div id='stateListContainer'>
       <h3>List of things in world state:</h3>
       <ul id="stateList">
         <li>none</li>
       </ul>
-    </div>  
+    </div>
   </form>
-<script type=module>
+  <script type=module>
 import THREE from '../three.module.js';
 import { XRChannelConnection } from '../xrrtc.js';
 
@@ -239,28 +237,11 @@ let uploadData = null;
 const uploadContainer = document.getElementById('fileUploadContainer');
 const stateListContainer = document.getElementById('stateListContainer');
 
-const setPreviewImage = (file) => {
-  const previewImage = document.getElementById('previewImage');
-  const reader = new FileReader();
-
-  reader.addEventListener("load", () => {
-    previewImage.src = reader.result;
-  }, false);
-
-  if (file) {
-    reader.readAsDataURL(file);
-  }
-}
-
 const _connectMultiplayer = async roomName => {
   channelConnection = new XRChannelConnection(`${presenceHost}/`, {
     roomName,
     // displayName: 'user',
   });
-
-  setTimeout(() => {
-    console.log(channelConnection.getAllState())
-  }, 5000);
 
   const fileInput = document.getElementById('fileInput');
   const stateList = document.getElementById('stateList');
@@ -268,27 +249,24 @@ const _connectMultiplayer = async roomName => {
   uploadContainer.style.visibility = 'visible';
   stateListContainer.style.visibility = 'visible';
 
-  fileInput.addEventListener('change', async (e) => {
-    setPreviewImage(e.target.files[0])
-    const buffer = await e.target.files[0].arrayBuffer();
-    console.log(buffer)
-    channelConnection.setState('hello', 'there')
-    setTimeout(() => {
-      channelConnection.getState('hello')
-    }, 5000);
+  fileInput.addEventListener('change', e => {
+    const file = e.target.files[0];
+    let fileObject = {
+      name: file.name,
+      type: file.type,
+      size: file.size
+    };
+
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      fileObject.src = reader.result;
+      console.log(fileObject);
+      channelConnection.runScript(fileObject.name, fileObject);
+    });
+    if (file) {
+      reader.readAsText(file);
+    }
   })
-
-  channelConnection.addEventListener('getState', e => {
-    console.log(e)
-  });
-
-  channelConnection.addEventListener('setState', e => {
-    console.log(e)
-  });
-
-  channelConnection.addEventListener('setAllState', e => {
-    console.log(e)
-  });
 
   channelConnection.addEventListener('open', e => {
     channelConnectionOpen = true;
@@ -317,6 +295,7 @@ const _connectMultiplayer = async roomName => {
     });
   });
 };
+
 const _disconnectMultiplayer = async () => {
   if (channelConnection) {
     uploadContainer.style.visibility = 'hidden';
@@ -427,4 +406,5 @@ window.addEventListener('resize', e => {
 
 </script>
 </body>
+
 </html>
