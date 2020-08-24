@@ -124,9 +124,6 @@ class XRChannelConnection extends EventTarget {
       'initState',
       'updateState',
       'setState',
-      'getState',
-      'getAllState',
-      'runScript',
       'getFile',
       'edit'
     ].forEach(m => {
@@ -147,22 +144,6 @@ class XRChannelConnection extends EventTarget {
 
   setState(key, value) {
     this.dialogClient.setState(key, value);
-  }
-
-  getState(key) {
-    this.dialogClient.getState(key);
-  }
-
-  getAllState() {
-    this.dialogClient.getAllState();
-  }
-
-  deleteState(key) {
-    this.dialogClient.deleteState(key);
-  }
-
-  runScript(key, object) {
-    this.dialogClient.runScript(key, object);
   }
 
   getFile(key) {

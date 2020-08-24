@@ -675,7 +675,6 @@ export default class RoomClient extends EventTarget
 
 			this._protoo.on('notification', (notification) =>
 			{
-				console.log(notification)
 				logger.debug(
 					'proto "notification" event [method:%s, data:%o]',
 					notification.method, notification.data);
@@ -858,39 +857,9 @@ export default class RoomClient extends EventTarget
 						break;
 					}
 
-					case 'getAllState':
-					{
-						console.log('Room.js, getAllState:', notification)
-						this.dispatchEvent(new MessageEvent(notification.method, {
-							data: notification.data,
-						}));
-
-						break;
-					}
-
-					case 'getState':
-					{
-						console.log('Room.js, getState:', notification)
-						this.dispatchEvent(new MessageEvent(notification.method, {
-							data: notification.data,
-						}));
-
-						break;
-					}
-
 					case 'setState':
 					{
 						console.log('Room.js, setState:', notification)
-						this.dispatchEvent(new MessageEvent(notification.method, {
-							data: notification.data,
-						}));
-
-						break;
-					}
-
-					case 'runScript':
-					{
-						console.log('Room.js, runScript:', notification)
 						this.dispatchEvent(new MessageEvent(notification.method, {
 							data: notification.data,
 						}));
@@ -1681,41 +1650,6 @@ export default class RoomClient extends EventTarget
         this._protoo.notify('setState', {
         	key,
         	value,
-        });
-	}
-	
-	getState(key) {
-	    if (this._closed)
-	        return;
-
-        this._protoo.notify('getState', {
-			key
-        }); 
-	}
-	
-	getAllState() {
-	    if (this._closed)
-	        return;
-
-        this._protoo.notify('getAllState'); 
-    }
-
-    deleteState(key, value) {
-	    if (this._closed)
-	        return;
-
-        this._protoo.notify('deleteState', {
-        	key,
-        });
-	}
-	
-	runScript(key, object) {
-	    if (this._closed)
-	        return;
-
-        this._protoo.notify('runScript', {
-			key,
-			object
         });
 	}
 	
