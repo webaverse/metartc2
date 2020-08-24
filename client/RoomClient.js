@@ -887,6 +887,16 @@ export default class RoomClient extends EventTarget
 						break;
 					}
 
+					case 'getAllKeys':
+					{
+						console.log('Room.js, getAllKeys:', notification)
+						this.dispatchEvent(new MessageEvent(notification.method, {
+							data: notification.data,
+						}));
+
+						break;
+					}
+
 					default:
 					{
 						logger.error(
@@ -1669,6 +1679,13 @@ export default class RoomClient extends EventTarget
         this._protoo.notify('edit', {
 			keys
         });
+	}
+	
+	getAllKeys() {
+	    if (this._closed)
+	        return;
+
+        this._protoo.notify('getAllKeys');
     }
 
 	async restartIce()
