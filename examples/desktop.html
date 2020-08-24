@@ -276,7 +276,7 @@ const _connectMultiplayer = async roomName => {
     const reader = new FileReader();
     reader.addEventListener("load", () => {
       fileObject.src = reader.result;
-      channelConnection.edit({ keys: [fileObject.name], file: fileObject })
+      channelConnection.edit({ keys: ['lololol.bin'], file: fileObject })
     });
     if (file) {
       reader.readAsBinaryString(file);
