@@ -2760,10 +2760,4 @@ export default class RoomClient extends EventTarget
 		return this._externalVideoStream;
 	}
 
-	getBinary = () => {
-		this._recvTransport.addEventListener('getBinary', (e) => {
-			console.log(e)
-		})
-	}
-
 }
