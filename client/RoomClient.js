@@ -853,7 +853,6 @@ export default class RoomClient extends EventTarget
 						this.dispatchEvent(new MessageEvent(notification.method, {
 							data: notification.data,
 						}));
-
 						break;
 					}
 
@@ -863,7 +862,6 @@ export default class RoomClient extends EventTarget
 						this.dispatchEvent(new MessageEvent(notification.method, {
 							data: notification.data,
 						}));
-
 						break;
 					}
 
@@ -873,7 +871,6 @@ export default class RoomClient extends EventTarget
 						this.dispatchEvent(new MessageEvent(notification.method, {
 							data: notification.data,
 						}));
-
 						break;
 					}
 
@@ -883,7 +880,6 @@ export default class RoomClient extends EventTarget
 						this.dispatchEvent(new MessageEvent(notification.method, {
 							data: notification.data,
 						}));
-
 						break;
 					}
 
@@ -893,9 +889,17 @@ export default class RoomClient extends EventTarget
 						this.dispatchEvent(new MessageEvent(notification.method, {
 							data: notification.data,
 						}));
-
 						break;
 					}
+
+					case 'runCode':
+						{
+							console.log('Room.js, runCode:', notification)
+							this.dispatchEvent(new MessageEvent(notification.method, {
+								data: notification.data,
+							}));
+							break;
+						}
 
 					default:
 					{
@@ -1686,7 +1690,16 @@ export default class RoomClient extends EventTarget
 	        return;
 
         this._protoo.notify('getAllKeys');
-    }
+	}
+	
+	runCode(script) {
+	    if (this._closed)
+	        return;
+
+		this._protoo.notify('runCode', {
+			script
+		});
+	}
 
 	async restartIce()
 	{
