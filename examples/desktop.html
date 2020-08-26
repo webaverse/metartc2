@@ -254,10 +254,6 @@ const _connectMultiplayer = async roomName => {
     }) 
   }, {once: true});
 
-  setTimeout(() => {
-    channelConnection.getAllKeys();
-  }, 3000)
-  
   const fileInput = document.getElementById('fileInput');
   const stateList = document.getElementById('stateList');
 
@@ -273,6 +269,7 @@ const _connectMultiplayer = async roomName => {
       channelConnection.uploadBinary({ binary: new window.buffer.Buffer('hello world testing'), uuid: 'lol-1' });
       channelConnection.uploadBinary({ binary: new window.buffer.Buffer('lol there'), uuid: 'lol-1' });
       channelConnection.uploadBinary({ binary: new window.buffer.Buffer('hehehehe'), uuid: 'lol-1' });
+      channelConnection.getAllKeys();
     });
     if (file) {
       reader.readAsBinaryString(file);
