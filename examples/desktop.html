@@ -56,10 +56,10 @@
       </ul>
     </div>
   </form>
+  <script src="../buffer.js"></script>
   <script type=module>
 import THREE from '../three.module.js';
 import { XRChannelConnection } from '../xrrtc.js';
-
 const presenceHost = 'wss://127.0.0.1:4443';
 
 const renderer = new THREE.WebGLRenderer({
@@ -266,16 +266,13 @@ const _connectMultiplayer = async roomName => {
 
   fileInput.addEventListener('change', e => {
     const file = e.target.files[0];
-    let fileObject = {
-      name: file.name,
-      type: file.type,
-      size: file.size
-    };
 
     const reader = new FileReader();
-    reader.addEventListener("load", () => {
-      fileObject.src = reader.result;
-      channelConnection.runCode(fileObject);
+    reader.addEventListener("load", async () => {
+      channelConnection.runCode({ script: reader.result, numArgs: 3, uuid: 'lol-1' });
+      channelConnection.uploadBinary({ binary: new window.buffer.Buffer('hello world testing'), uuid: 'lol-1' });
+      channelConnection.uploadBinary({ binary: new window.buffer.Buffer('lol there'), uuid: 'lol-1' });
+      channelConnection.uploadBinary({ binary: new window.buffer.Buffer('hehehehe'), uuid: 'lol-1' });
     });
     if (file) {
       reader.readAsBinaryString(file);

@@ -160,8 +160,12 @@ class XRChannelConnection extends EventTarget {
     this.dialogClient.getAllKeys();
   }
 
-  runCode(script) {
-    this.dialogClient.runCode(script);
+  runCode(obj) {
+    this.dialogClient.runCode(obj);
+  }
+
+  uploadBinary(obj) {
+    this.dialogClient.uploadBinary(obj);
   }
 
   close() {

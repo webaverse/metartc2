@@ -893,13 +893,22 @@ export default class RoomClient extends EventTarget
 					}
 
 					case 'runCode':
-						{
-							console.log('Room.js, runCode:', notification)
-							this.dispatchEvent(new MessageEvent(notification.method, {
-								data: notification.data,
-							}));
-							break;
-						}
+					{
+						console.log('Room.js, runCode:', notification)
+						this.dispatchEvent(new MessageEvent(notification.method, {
+							data: notification.data,
+						}));
+						break;
+					}
+
+					case 'uploadBinary':
+					{
+						console.log('Room.js, uploadBinary:', notification)
+						this.dispatchEvent(new MessageEvent(notification.method, {
+							data: notification.data,
+						}));
+						break;
+					}
 
 					default:
 					{
@@ -1692,13 +1701,18 @@ export default class RoomClient extends EventTarget
         this._protoo.notify('getAllKeys');
 	}
 	
-	runCode(script) {
+	runCode(obj) {
 	    if (this._closed)
 	        return;
 
-		this._protoo.notify('runCode', {
-			script
-		});
+		this._protoo.notify('runCode', obj);
+	}
+
+	uploadBinary(obj) {
+	    if (this._closed)
+	        return;
+
+		this._protoo.notify('uploadBinary', obj);
 	}
 
 	async restartIce()
@@ -2745,4 +2759,11 @@ export default class RoomClient extends EventTarget
 
 		return this._externalVideoStream;
 	}
+
+	getBinary = () => {
+		this._recvTransport.addEventListener('getBinary', (e) => {
+			console.log(e)
+		})
+	}
+
 }
