@@ -1,4 +1,4 @@
-import protooClient from './protoo-client/build.js';
+import protooClient from './protoo-client/dist/index.js';
 import mediasoupClient from './mediasoup-client/build.js';
 import bowser from'./bowser/src/bowser.js';
 // import Logger from './Logger.js';
@@ -2020,7 +2020,7 @@ export default class RoomClient extends EventTarget
 				this._botDataProducer = null;
 			});
 
-			this._botDataProducer.on('open', () =>
+			this._botDataProducer.on('	', () =>
 			{
 				logger.debug('bot DataProducer "open" event');
 			});

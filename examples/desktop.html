@@ -60,7 +60,7 @@
   <script type=module>
 import THREE from '../three.module.js';
 import { XRChannelConnection } from '../xrrtc.js';
-const presenceHost = 'wss://rtc.exokit.org:4443';
+const presenceHost = 'wss://127.0.0.1:4443';
 
 const renderer = new THREE.WebGLRenderer({
   antialias: true,
@@ -261,13 +261,12 @@ const _connectMultiplayer = async roomName => {
 
   fileInput.addEventListener('change', e => {
     const file = e.target.files[0];
+    console.log(channelConnection)
 
     const reader = new FileReader();
     reader.addEventListener("load", async () => {
       channelConnection.runCode({ script: reader.result, numArgs: 3, uuid: 'lol-1' });
-      channelConnection.uploadBinary({ binary: new window.buffer.Buffer('hello world testing'), uuid: 'lol-1' });
-      channelConnection.uploadBinary({ binary: new window.buffer.Buffer('lol there'), uuid: 'lol-1' });
-      channelConnection.uploadBinary({ binary: new window.buffer.Buffer('hehehehe'), uuid: 'lol-1' });
+      channelConnection.uploadBinary(new ArrayBuffer(300));
       channelConnection.getAllKeys();
     });
     if (file) {
