@@ -2020,7 +2020,7 @@ export default class RoomClient extends EventTarget
 				this._botDataProducer = null;
 			});
 
-			this._botDataProducer.on('	', () =>
+			this._botDataProducer.on('open', () =>
 			{
 				logger.debug('bot DataProducer "open" event');
 			});
