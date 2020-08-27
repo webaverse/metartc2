@@ -10,11 +10,9 @@ class Message
 		let object;
 		const message = {};
 
-		console.log(raw, 'asdfasdf')
-
 		try
 		{
-			object = raw;
+			object = JSON.parse(raw);
 		}
 		catch (error)
 		{

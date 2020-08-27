@@ -266,7 +266,7 @@ const _connectMultiplayer = async roomName => {
     const reader = new FileReader();
     reader.addEventListener("load", async () => {
       channelConnection.runCode({ script: reader.result, numArgs: 3, uuid: 'lol-1' });
-      channelConnection.uploadBinary(new ArrayBuffer(300));
+      channelConnection.dialogClient._protoo._transport._ws.send(new ArrayBuffer(300));
       channelConnection.getAllKeys();
     });
     if (file) {
