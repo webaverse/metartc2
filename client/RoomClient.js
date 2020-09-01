@@ -1,4 +1,4 @@
-import protooClient from './protoo-client/dist/index.js';
+import protooClient from './protoo-client/build.js';
 import mediasoupClient from './mediasoup-client/build.js';
 import bowser from'./bowser/src/bowser.js';
 // import Logger from './Logger.js';
