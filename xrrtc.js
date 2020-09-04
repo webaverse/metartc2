@@ -154,10 +154,6 @@ class XRChannelConnection extends EventTarget {
     this.dialogClient.runCode(obj);
   }
 
-  uploadBinary(obj) {
-    this.dialogClient.uploadBinary(obj);
-  }
-
   close() {
     this.dialogClient.close();
   }

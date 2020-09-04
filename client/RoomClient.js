@@ -883,15 +883,6 @@ export default class RoomClient extends EventTarget
 						break;
 					}
 
-					case 'uploadBinary':
-					{
-						console.log('Room.js, uploadBinary:', notification)
-						this.dispatchEvent(new MessageEvent(notification.method, {
-							data: notification.data,
-						}));
-						break;
-					}
-
 					default:
 					{
 						logger.error(
@@ -1670,13 +1661,6 @@ export default class RoomClient extends EventTarget
 	        return;
 
 		this._protoo.notify('runCode', obj);
-	}
-
-	uploadBinary(obj) {
-	    if (this._closed)
-	        return;
-
-		this._protoo.notify('uploadBinary', obj);
 	}
 
 	async restartIce()
