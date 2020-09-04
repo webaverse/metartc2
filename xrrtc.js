@@ -126,7 +126,6 @@ class XRChannelConnection extends EventTarget {
       'setState',
       'getFile',
       'getAllKeys',
-      'edit',
       'runCode'
     ].forEach(m => {
       dialogClient.addEventListener(m, e => {
@@ -150,10 +149,6 @@ class XRChannelConnection extends EventTarget {
 
   getFile(key) {
     this.dialogClient.getFile(key);
-  }
-
-  edit(keys) {
-    this.dialogClient.edit(keys);
   }
 
   getAllKeys() {
