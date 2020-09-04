@@ -59,7 +59,7 @@
   <script type=module>
 import THREE from '../three.module.js';
 import { XRChannelConnection } from '../xrrtc.js';
-import { v4 as uuidv4 } from 'uuid';
+
 const presenceHost = 'wss://127.0.0.1:4443';
 
 const renderer = new THREE.WebGLRenderer({
@@ -236,6 +236,7 @@ let microphoneMediaStream = null;
 const uploadContainer = document.getElementById('fileUploadContainer');
 const stateListContainer = document.getElementById('stateListContainer');
 let runCodeMap = new Map();
+let runNum = 0;
 
 const _connectMultiplayer = async roomName => {
   channelConnection = new XRChannelConnection(`${presenceHost}/`, {
@@ -244,18 +245,20 @@ const _connectMultiplayer = async roomName => {
   });
 
   const runCode = (script, numArgs) => {
-    const uuid = uuidv4();
-    runCodeMap.set(uuid, {script: script, numArgs: numArgs})
     return new Promise((resolve, reject) => {
-      channelConnection.addEventListener('runCode', (e) => {
-        if (e.data.peerId === peer._id && runCodeMap.get(e.data.id)) {
-          runCodeMap.delete(e.data.id)
-          resolve();
-        }
-      }, {once: true})
-      channelConnection.runCode({ id: uuid, script: script, numArgs: numArgs });
+      runNum++
+      runCodeMap.set(runNum, resolve)
+      channelConnection.runCode({ id: runNum, script, numArgs });
     })
   }
+
+  channelConnection.addEventListener('runCode', (e) => {
+    const cb = runCodeMap.get(e.data.id);
+    if (e.data.peerId === channelConnection.connectionId && cb) {
+      runCodeMap.delete(e.data.id)
+      cb();
+    }
+  })
 
   channelConnection.addEventListener('getAllKeys', e => {
     const list = document.getElementById('stateList');
@@ -280,7 +283,7 @@ const _connectMultiplayer = async roomName => {
 
     const reader = new FileReader();
     reader.addEventListener("load", async () => {
-      await runCode({ script: reader.result, numArgs: 0 });
+      await runCode(reader.result);
       // channelConnection.dialogClient._protoo._transport._ws.send(new ArrayBuffer(100)); <<<<< this is what uploading binary looks like, need to increase numArgs++ for each binary.
 
       channelConnection.getAllKeys();
