@@ -1,31 +1,66 @@
 <!doctype html>
 <html>
+
 <head>
-<style>
-  body {
-    margin: 0;
-  }
-  form {
-    position: absolute;
-    top: 0;
-    left: 0;
-    background-color: #EEE;
-  }
-</style>
+  <style>
+    body {
+      margin: 0;
+    }
+
+    form {
+      position: absolute;
+      top: 0;
+      left: 0;
+      background-color: #EEE;
+      padding-left: 20px;
+    }
+
+    #fileUploadContainer {
+      padding-bottom: 30px;
+      visibility: hidden;
+    }
+
+    #stateListContainer {
+      padding-bottom: 30px;
+      visibility: hidden;
+    }
+
+    #previewImage {
+      height: 250px;
+      width: 350px;
+      margin-right: 20px;
+    }
+  </style>
 </head>
+
 <body>
   <form>
-    <h1>Connect to room</h1>
-    <input type="text" placeholder="Room name" id=room-name-input>
-    <input type=button value="Connect" id=connect-button>
-    <input type=button value="Disonnect" id=disconnect-button style="display: none;">
-    <p>Click for FPS controls</p>
+    <div>
+      <h1>Connect to a room:</h1>
+      <input type="text" placeholder="Room name" id=room-name-input>
+      <input type=button value="Connect" id=connect-button>
+      <input type=button value="Disonnect" id=disconnect-button style="display: none;">
+      <p>Click for FPS controls!</p>
+    </div>
+    <br />
+    <div id='fileUploadContainer'>
+      <h3>Upload JS to edit world:</h3>
+      <div>
+        <input type="file" id="fileInput" name="fileInput">
+      </div>
+    </div>
+    <div id='stateListContainer'>
+      <h3>List of things in world state:</h3>
+      <ul id="stateList">
+        <li>none</li>
+      </ul>
+    </div>
   </form>
-<script type=module>
+  <script type=module>
 import THREE from '../three.module.js';
-import {XRChannelConnection} from '../xrrtc.js';
+import { XRChannelConnection } from '../xrrtc.js';
 
-const presenceHost = 'wss://rtc.exokit.org:4443';
+const presenceHost = 'wss://127.0.0.1:4443';
 
 const renderer = new THREE.WebGLRenderer({
   antialias: true,
@@ -198,17 +233,56 @@ let channelConnection = null;
 let channelConnectionOpen = false;
 const peerConnections = [];
 let microphoneMediaStream = null;
+const uploadContainer = document.getElementById('fileUploadContainer');
+const stateListContainer = document.getElementById('stateListContainer');
+
 const _connectMultiplayer = async roomName => {
   channelConnection = new XRChannelConnection(`${presenceHost}/`, {
     roomName,
     // displayName: 'user',
   });
+
+  channelConnection.addEventListener('getAllKeys', e => {
+    const list = document.getElementById('stateList');
+    list.innerHTML = '';
+    e.data.forEach(key => {
+      const line = document.createElement("li");
+      const text = document.createTextNode(key);
+      line.appendChild(text);
+      list.appendChild(line);
+    }) 
+  }, {once: true});
+
+  const fileInput = document.getElementById('fileInput');
+  const stateList = document.getElementById('stateList');
+
+  uploadContainer.style.visibility = 'visible';
+  stateListContainer.style.visibility = 'visible';
+
+  fileInput.addEventListener('change', e => {
+    const file = e.target.files[0];
+    console.log(channelConnection)
+
+    const reader = new FileReader();
+    reader.addEventListener("load", async () => {
+      await channelConnection.runCode(reader.result);
+      // channelConnection.dialogClient._protoo._transport._ws.send(new ArrayBuffer(100)); <<<<< this is what uploading binary looks like, need to increase numArgs++ for each binary.
+
+      channelConnection.getAllKeys();
+    });
+    if (file) {
+      reader.readAsBinaryString(file);
+    }
+  })
+
   channelConnection.addEventListener('open', e => {
     channelConnectionOpen = true;
   }, {once: true});
+
   channelConnection.addEventListener('close', e => {
     channelConnectionOpen = false;
   }, {once: true});
+
   channelConnection.addEventListener('peerconnection', e => {
     const peerConnection = e.data;
 
@@ -228,9 +302,12 @@ const _connectMultiplayer = async roomName => {
     });
   });
 };
+
 const _disconnectMultiplayer = async () => {
   if (channelConnection) {
-    channelConnection.disconnect()
+    uploadContainer.style.visibility = 'hidden';
+    stateListContainer.style.visibility = 'hidden';
+    channelConnection.close();
     channelConnection = null;
 
     // const href = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
@@ -336,4 +413,5 @@ window.addEventListener('resize', e => {
 
 </script>
 </body>
+
 </html>

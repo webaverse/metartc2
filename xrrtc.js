@@ -23,6 +23,8 @@ class XRChannelConnection extends EventTarget {
     this.connectionId = makeId();
     this.peerConnections = [];
     this.dataChannel = null;
+    this.runNum = 0;
+    this.runCodeMap = new Map();
 
     // console.log('local connection id', this.connectionId);
 
@@ -59,6 +61,15 @@ class XRChannelConnection extends EventTarget {
       url: `${url}?roomId=${roomName}&peerId=${this.connectionId}`,
       displayName,
     });
+
+    dialogClient.addEventListener('runCode', (e) => {
+      const cb = this.runCodeMap.get(e.data.runNum);
+      if (cb) {
+        this.runCodeMap.delete(e.data.runNum)
+        cb();
+      }
+    })
+
     dialogClient.addEventListener('addsend', async e => {
       const {data: {dataProducer: {id, _dataChannel}}} = e;
       // console.log('add send', _dataChannel);
@@ -83,6 +94,7 @@ class XRChannelConnection extends EventTarget {
       // console.log('remove send', _dataChannel);
       this.dataChannel = null;
     });
+
     dialogClient.addEventListener('addreceive', e => {
       const {data: {peerId, label, dataConsumer: {id, _dataChannel}}} = e;
       // console.log('add data receive', peerId, label, _dataChannel);
@@ -121,6 +133,9 @@ class XRChannelConnection extends EventTarget {
     [
       'initState',
       'updateState',
+      'setState',
+      'getAllKeys',
+      'runCode'
     ].forEach(m => {
       dialogClient.addEventListener(m, e => {
         this.dispatchEvent(new MessageEvent(m, {
@@ -141,8 +156,16 @@ class XRChannelConnection extends EventTarget {
     this.dialogClient.setState(key, value);
   }
 
-  deleteState(key) {
-    this.dialogClient.deleteState(key);
+  getAllKeys() {
+    this.dialogClient.getAllKeys();
+  }
+
+  runCode(script, numArgs) {
+    return new Promise((resolve, reject) => {
+      this.runNum++
+      this.runCodeMap.set(this.runNum, resolve)
+      this.dialogClient.runCode({ runNum: this.runNum, script: script, numArgs: numArgs });
+    })
   }
 
   close() {

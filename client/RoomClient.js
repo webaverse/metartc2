@@ -843,13 +843,43 @@ export default class RoomClient extends EventTarget
 						break;
 					}
 
-					case 'initState':
+					case 'initState': {
+						console.log('Room.js, initState:', notification);
+						break;
+					}
 					case 'updateState':
 					{
+						console.log('Room.js, updateState:', notification);
 						this.dispatchEvent(new MessageEvent(notification.method, {
 							data: notification.data,
 						}));
+						break;
+					}
 
+					case 'setState':
+					{
+						console.log('Room.js, setState:', notification)
+						this.dispatchEvent(new MessageEvent(notification.method, {
+							data: notification.data,
+						}));
+						break;
+					}
+
+					case 'getAllKeys':
+					{
+						console.log('Room.js, getAllKeys:', notification)
+						this.dispatchEvent(new MessageEvent(notification.method, {
+							data: notification.data,
+						}));
+						break;
+					}
+
+					case 'runCode':
+					{
+						console.log('Room.js, runCode:', notification)
+						this.dispatchEvent(new MessageEvent(notification.method, {
+							data: notification.data,
+						}));
 						break;
 					}
 
@@ -1617,16 +1647,21 @@ export default class RoomClient extends EventTarget
         	key,
         	value,
         });
-    }
-
-    deleteState(key, value) {
+	}
+	
+	getAllKeys() {
 	    if (this._closed)
 	        return;
 
-        this._protoo.notify('deleteState', {
-        	key,
-        });
-    }
+        this._protoo.notify('getAllKeys');
+	}
+	
+	runCode(obj) {
+	    if (this._closed)
+	        return;
+
+		this._protoo.notify('runCode', obj);
+	}
 
 	async restartIce()
 	{
@@ -2672,4 +2707,5 @@ export default class RoomClient extends EventTarget
 
 		return this._externalVideoStream;
 	}
+
 }
