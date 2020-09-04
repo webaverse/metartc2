@@ -59,6 +59,7 @@
   <script type=module>
 import THREE from '../three.module.js';
 import { XRChannelConnection } from '../xrrtc.js';
+import { v4 as uuidv4 } from 'uuid';
 const presenceHost = 'wss://127.0.0.1:4443';
 
 const renderer = new THREE.WebGLRenderer({
@@ -234,7 +235,7 @@ const peerConnections = [];
 let microphoneMediaStream = null;
 const uploadContainer = document.getElementById('fileUploadContainer');
 const stateListContainer = document.getElementById('stateListContainer');
-
+let runCodeMap = new Map();
 
 const _connectMultiplayer = async roomName => {
   channelConnection = new XRChannelConnection(`${presenceHost}/`, {
@@ -243,15 +244,16 @@ const _connectMultiplayer = async roomName => {
   });
 
   const runCode = (script, numArgs) => {
+    const uuid = uuidv4();
+    runCodeMap.set(uuid, {script: script, numArgs: numArgs})
     return new Promise((resolve, reject) => {
       channelConnection.addEventListener('runCode', (e) => {
-        console.log(peer)
-        if (e.data.peerId === peer._id) {
-          channelConnection.removeEventListener('runCode');
+        if (e.data.peerId === peer._id && runCodeMap.get(e.data.id)) {
+          runCodeMap.delete(e.data.id)
           resolve();
         }
-      })
-      channelConnection.runCode({ script: script, numArgs: numArgs });
+      }, {once: true})
+      channelConnection.runCode({ id: uuid, script: script, numArgs: numArgs });
     })
   }
 
