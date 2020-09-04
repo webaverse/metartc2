@@ -23,6 +23,8 @@ class XRChannelConnection extends EventTarget {
     this.connectionId = makeId();
     this.peerConnections = [];
     this.dataChannel = null;
+    this.runNum = 0;
+    this.runCodeMap = new Map();
 
     // console.log('local connection id', this.connectionId);
 
@@ -59,6 +61,14 @@ class XRChannelConnection extends EventTarget {
       url: `${url}?roomId=${roomName}&peerId=${this.connectionId}`,
       displayName,
     });
+
+    dialogClient.addEventListener('runCode', (e) => {
+      const cb = this.runCodeMap.get(e.data.runNum);
+      if (cb) {
+        this.runCodeMap.delete(e.data.runNum)
+        cb();
+      }
+    })
 
     dialogClient.addEventListener('addsend', async e => {
       const {data: {dataProducer: {id, _dataChannel}}} = e;
@@ -150,8 +160,12 @@ class XRChannelConnection extends EventTarget {
     this.dialogClient.getAllKeys();
   }
 
-  runCode(obj) {
-    this.dialogClient.runCode(obj);
+  runCode(script, numArgs) {
+    return new Promise((resolve, reject) => {
+      this.runNum++
+      this.runCodeMap.set(this.runNum, resolve)
+      this.dialogClient.runCode({ runNum: this.runNum, script: script, numArgs: numArgs });
+    })
   }
 
   close() {

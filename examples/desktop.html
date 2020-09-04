@@ -235,30 +235,12 @@ const peerConnections = [];
 let microphoneMediaStream = null;
 const uploadContainer = document.getElementById('fileUploadContainer');
 const stateListContainer = document.getElementById('stateListContainer');
-let runCodeMap = new Map();
-let runNum = 0;
 
 const _connectMultiplayer = async roomName => {
   channelConnection = new XRChannelConnection(`${presenceHost}/`, {
     roomName,
     // displayName: 'user',
   });
-
-  const runCode = (script, numArgs) => {
-    return new Promise((resolve, reject) => {
-      runNum++
-      runCodeMap.set(runNum, resolve)
-      channelConnection.runCode({ id: runNum, script, numArgs });
-    })
-  }
-
-  channelConnection.addEventListener('runCode', (e) => {
-    const cb = runCodeMap.get(e.data.id);
-    if (e.data.peerId === channelConnection.connectionId && cb) {
-      runCodeMap.delete(e.data.id)
-      cb();
-    }
-  })
 
   channelConnection.addEventListener('getAllKeys', e => {
     const list = document.getElementById('stateList');
@@ -283,7 +265,7 @@ const _connectMultiplayer = async roomName => {
 
     const reader = new FileReader();
     reader.addEventListener("load", async () => {
-      await runCode(reader.result);
+      await channelConnection.runCode(reader.result);
       // channelConnection.dialogClient._protoo._transport._ws.send(new ArrayBuffer(100)); <<<<< this is what uploading binary looks like, need to increase numArgs++ for each binary.
 
       channelConnection.getAllKeys();
