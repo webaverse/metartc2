@@ -865,15 +865,6 @@ export default class RoomClient extends EventTarget
 						break;
 					}
 
-					case 'getFile':
-					{
-						console.log('Room.js, getFile:', notification)
-						this.dispatchEvent(new MessageEvent(notification.method, {
-							data: notification.data,
-						}));
-						break;
-					}
-
 					case 'getAllKeys':
 					{
 						console.log('Room.js, getAllKeys:', notification)
@@ -1664,15 +1655,6 @@ export default class RoomClient extends EventTarget
         this._protoo.notify('setState', {
         	key,
         	value,
-        });
-	}
-	
-	getFile(key) {
-	    if (this._closed)
-	        return;
-
-        this._protoo.notify('getFile', {
-			key
         });
 	}
 	
