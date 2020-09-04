@@ -265,12 +265,8 @@ const _connectMultiplayer = async roomName => {
 
     const reader = new FileReader();
     reader.addEventListener("load", async () => {
-      channelConnection.runCode({ script: reader.result, numArgs: 5 });
-      channelConnection.dialogClient._protoo._transport._ws.send(new ArrayBuffer(100));
-      channelConnection.dialogClient._protoo._transport._ws.send(new ArrayBuffer(200));
-      channelConnection.dialogClient._protoo._transport._ws.send(new ArrayBuffer(300));
-      channelConnection.dialogClient._protoo._transport._ws.send(new ArrayBuffer(400));
-      channelConnection.dialogClient._protoo._transport._ws.send(new ArrayBuffer(400));
+      channelConnection.runCode({ script: reader.result, numArgs: 0 });
+      // channelConnection.dialogClient._protoo._transport._ws.send(new ArrayBuffer(100)); <<<<< this is what uploading binary looks like, need to increase numArgs++ for each binary.
 
       channelConnection.getAllKeys();
     });
