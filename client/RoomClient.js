@@ -883,6 +883,15 @@ export default class RoomClient extends EventTarget
 						break;
 					}
 
+					case 'peerEdit':
+					{
+						console.log('Room.js, peerEdit:', notification)
+						this.dispatchEvent(new MessageEvent(notification.method, {
+							data: notification.data,
+						}));
+						break;
+					}
+
 					default:
 					{
 						logger.error(

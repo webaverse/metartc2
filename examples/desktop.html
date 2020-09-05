@@ -256,6 +256,17 @@ const _connectMultiplayer = async roomName => {
     }) 
   }, {once: true});
 
+  channelConnection.addEventListener('peerEdit', e => {
+    const list = document.getElementById('stateList');
+    list.innerHTML = '';
+    e.data.keys.forEach(key => {
+      const line = document.createElement("li");
+      const text = document.createTextNode(key);
+      line.appendChild(text);
+      list.appendChild(line);
+    }) 
+  }, {once: true});
+
   const fileInput = document.getElementById('fileInput');
   const stateList = document.getElementById('stateList');
 
