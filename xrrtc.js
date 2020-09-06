@@ -135,7 +135,8 @@ class XRChannelConnection extends EventTarget {
       'updateState',
       'setState',
       'getAllKeys',
-      'runCode'
+      'runCode',
+      'peerEdit'
     ].forEach(m => {
       dialogClient.addEventListener(m, e => {
         this.dispatchEvent(new MessageEvent(m, {

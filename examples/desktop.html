@@ -6,6 +6,9 @@
     body {
       margin: 0;
     }
+    html, body {
+      overflow: hidden;
+    }
 
     form {
       position: absolute;
@@ -246,6 +249,17 @@ const _connectMultiplayer = async roomName => {
     const list = document.getElementById('stateList');
     list.innerHTML = '';
     e.data.forEach(key => {
+      const line = document.createElement("li");
+      const text = document.createTextNode(key);
+      line.appendChild(text);
+      list.appendChild(line);
+    }) 
+  }, {once: true});
+
+  channelConnection.addEventListener('peerEdit', e => {
+    const list = document.getElementById('stateList');
+    list.innerHTML = '';
+    e.data.keys.forEach(key => {
       const line = document.createElement("li");
       const text = document.createTextNode(key);
       line.appendChild(text);
