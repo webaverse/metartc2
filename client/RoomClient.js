@@ -288,8 +288,8 @@ export default class RoomClient extends EventTarget
 		if (this._recvTransport)
 			this._recvTransport.close();
 
-		store.dispatch(
-			stateActions.setRoomState('closed'));
+		// store.dispatch(
+		// 	stateActions.setRoomState('closed'));
 	}
 
 	join() {
