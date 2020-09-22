@@ -311,8 +311,9 @@ const _connectMultiplayer = async roomName => {
     peerConnection.addEventListener('message', e => {
       const {data} = e;
       const j = JSON.parse(data);
-      const {pose: [head, leftHand, rightHand]} = j;
-      _updateRig(playerRig, head, leftHand, rightHand);
+      if(j.pose) {
+        _updateRig(playerRig, j.pose[0], j.pose[1], j.pose[2]);
+      }
     });
   });
 };
