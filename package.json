@@ -20,6 +20,6 @@
   "homepage": "https://github.com/exokitxr/metaassembly#readme",
   "dependencies": {
     "express": "^4.17.1",
-    "parcel": "^1.12.4"
+    "parcel": "^2.8.2"
   }
 }
